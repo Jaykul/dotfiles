@@ -1,0 +1,235 @@
+{
+    //******** Settings everyone should use ***********//
+    // Everyone should keep files git friendly
+    "files.encoding": "utf8",
+    // But because I can't convince everyone to switch to LF
+    "files.eol": "auto",
+    // This makes backtick linewrapping safe
+    "files.trimTrailingWhitespace": true,
+    // Obviously you should use the latest PTY on Windows
+    "terminal.integrated.windowsEnableConpty": true,
+    "terminal.integrated.rendererType": "auto",
+
+    // Default all the things to PowerShell
+    "files.defaultLanguage": "powershell",
+    "terminal.integrated.shell.linux": "pwsh",
+    "terminal.integrated.shellArgs.linux": [],
+    "terminal.integrated.shell.osx": "pwsh",
+    "terminal.integrated.shellArgs.osx": [],
+    // On Windows, Windows PowerShell (5.1) for now (because of my job)
+    "terminal.integrated.shell.windows": "{{ .shellexe }}",
+    // This is the setting for the "PowerShell Integrated Console"
+    "powershell.powerShellDefaultVersion": "{{ .shell }} (x64)",
+    "terminal.integrated.setLocaleVariables": true,
+    // Use Windows Terminal for all the "show in terminal" stuff
+    "terminal.external.windowsExec": "wt.exe",
+    // Pester 4 for now
+    "powershell.pester.useLegacyCodeLens": true,
+    // One True Brace Style is The Way (when necessary, override in projects)
+    "powershell.codeFormatting.preset": "OTBS",
+    "powershell.codeFormatting.autoCorrectAliases": true,
+    "powershell.codeFormatting.alignPropertyValuePairs": true,
+    "powershell.codeFormatting.trimWhitespaceAroundPipe": false,
+    "powershell.codeFormatting.useCorrectCasing": true,
+    "powershell.codeFormatting.pipelineIndentationStyle": "IncreaseIndentationForFirstPipeline",
+    "powershell.codeFolding.enable": true,
+    "powershell.codeFolding.showLastLine": false,
+    // So we don't forget which version is running
+    "powershell.integratedConsole.suppressStartupBanner": false,
+    "terminal.integrated.automationShell.linux": "pwsh",
+
+    //******** Personal Preferences ***********//
+    // The latest thing in syntax highlighting is sometimes buggy, but we need to try it and report those bugs ...
+    "editor.semanticHighlighting.enabled": false,
+
+    // Nobody cares about the white space at the end of lines, right?
+    "diffEditor.ignoreTrimWhitespace": false,
+    // I like the sidebar on the right
+    "workbench.sideBar.location": "right",
+
+    // Stop asking me if I'm sure ...
+    "explorer.confirmDragAndDrop": false,
+    "explorer.confirmDelete": false,
+
+    // I'm still not sure where I think snippets should go
+    "editor.snippetSuggestions": "inline",
+
+    // Here we can fix file associations that aren't handled
+    "files.associations": {
+        "*.ps1xml": "xml",
+        "*.audit": "xml"
+    },
+
+    // Your right-click will do _something_, choose:
+    //  - default: Show a context menu.
+    //  - copyPaste: Copy when there is a selection, otherwise paste.
+    //  - selectWord: Select the word under the cursor and show the context menu.
+    "terminal.integrated.rightClickBehavior": "selectWord",
+
+
+    // I can't figure out which VSCode is which without this
+    "window.titleBarStyle": "custom",
+    "window.title": "${rootName}${separator}${activeEditorShort}${dirty}${separator}${appName}",
+    // Personally, I want all files in the existing window (for speed)
+    "window.openFilesInNewWindow": "off",
+    // Personally, I want hot exit for everything
+    "window.restoreWindows": "all",
+    "files.hotExit": "onExitAndWindowClose",
+    // Personally, I don't need to see the menus. They show up when I press Alt ...
+    "window.menuBarVisibility": "toggle",
+    "window.zoomLevel": 0,
+    "breadcrumbs.enabled": true,
+
+    // Personally, I like wordwrap. I turn it off ocassionally with Alt+Z
+    "editor.wordWrap": "on",
+    "editor.wrappingIndent": "indent",
+
+    // I love font ligatures
+    "editor.fontFamily": "'CaskaydiaCove Nerd Font', 'CaskaydiaCove Nerd Font Mono', 'Cascadia Code PL', 'Cascadia Code', 'FuraCode NF Retina', 'FuraCode NF', 'Iosevka NF', 'Fira Code', Consolas, 'Courier New', monospace",
+    "editor.fontLigatures": true,
+
+    // I only customize this because by default it didn't have enough colors
+    "bracket-pair-colorizer-2.colors": [
+        "#D0D1CF",
+        "#39D900",
+        "#e23de2",
+        "#CE9600",
+        "#0088FF"
+    ],
+
+    // Personally, I like ALL my editors this way:
+    "editor.rulers": [80,120],
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false,
+    "editor.renderWhitespace": "boundary",
+    "editor.multiCursorModifier": "ctrlCmd",
+    "editor.formatOnPaste": true,
+    "editor.mouseWheelZoom": true,
+
+    "editor.minimap.enabled": true,
+    "editor.minimap.size": "fit",
+    "editor.minimap.renderCharacters": false,
+    "editor.minimap.showSlider": "always",
+
+    // With a few exceptions
+    // "[powershell]": {
+    //     // To make it select the $ in PowerShell variables when you double-click to select a word
+    //     "editor.wordSeparators": "`~!@#%^&*()-=+[{]}\\|;:'\",.<>/?"
+    // },
+    "[json]": {
+        "editor.tabSize": 2,
+        "editor.quickSuggestions": {
+            "strings": true
+        },
+        "editor.wordBasedSuggestions": false,
+        // "editor.defaultFormatter": "Wscats.qf"
+    },
+    "[xml]": {
+        "editor.tabSize": 2,
+        "editor.autoIndent": "advanced"
+    },
+    "[yaml]": {
+        "editor.tabSize": 2,
+        "editor.autoIndent": "advanced"
+    },
+    // These are json (with schema)
+    "[azure-pipelines]": {
+        "editor.insertSpaces": true,
+        "editor.tabSize": 2,
+        "editor.quickSuggestions": {
+            "other": true,
+            "comments": false,
+            "strings": true
+        },
+        "editor.autoIndent": "full"
+    },
+
+    // Here we can put fixes to the current VS Code theme's colors
+    "workbench.colorCustomizations": {
+        // I usually don't let Color Themes change the colors of the terminal, because Red should be Red ...
+        // "terminal.background": "#22212b", // The background of the Integrated Terminal's viewport.
+        // "terminal.border": "", // The color of the border that separates split panes within the terminal. This defaults to panel.border.
+        // "terminal.foreground": "#caf4ff", // The default foreground color of the Integrated Terminal.
+        "terminal.ansiBlack": "#39373B",
+        "terminal.ansiRed": "#C61554",
+        "terminal.ansiGreen": "#00A900",
+        "terminal.ansiYellow": "#926c02",
+        "terminal.ansiBlue": "#0054C0",
+        "terminal.ansiMagenta": "#88298b",
+        "terminal.ansiCyan": "#0d7280",
+        "terminal.ansiBrightBlack": "#444749",
+        "terminal.ansiBrightWhite": "#eaebe8",
+        "terminal.ansiBrightRed": "#FE628C",
+        "terminal.ansiBrightGreen": "#39D900",
+        "terminal.ansiBrightYellow": "#FEC600",
+        "terminal.ansiBrightBlue": "#0088FF",
+        "terminal.ansiBrightMagenta": "#FB94FF",
+        "terminal.ansiBrightCyan": "#80FCFF",
+        "terminal.ansiWhite": "#798085",
+        //"terminal.selectionBackground": "", // The selection background color of the terminal.
+        //"terminalCursor.background": "", // The background color of the terminal cursor. Allows customizing the color of a character overlapped by a block cursor.
+        //"terminalCursor.foreground": "", // The foreground color of the terminal cursor.
+    },
+    "editor.tokenColorCustomizations": {
+        "textMateRules": [
+            {
+                "scope": "punctuation.definition.comment.block.begin",
+                "settings": { "fontStyle": "bold" }
+            },
+            {
+                "scope": "punctuation.definition.comment.block.end",
+                "settings": { "fontStyle": "bold" }
+            },
+            {
+                "scope": "variable.other.member",
+                "settings": { "foreground": "#E3E" }
+            },
+            {
+                "scope": "variable.other.member.method",
+                "settings": { "foreground": "#FF0000" }
+            },
+            {
+                "scope": "punctuation.definition.variable.powershell",
+                "settings": { "foreground": "#DAD" }
+            },
+        ]
+    },
+
+    //******** extensions will add new settings at the bottom - don't assume I customized this stuff ***********//
+    "python.pythonPath": "C:\\ProgramData\\Anaconda3\\python.exe",
+    "gitlens.views.fileHistory.enabled": true,
+    "gitlens.views.lineHistory.enabled": true,
+    "gitlens.views.repositories.location": "scm",
+    "gitlens.views.fileHistory.location": "scm",
+    "gitlens.views.lineHistory.location": "scm",
+    "gitlens.views.compare.location": "scm",
+    "gitlens.views.search.location": "scm",
+    "gitlens.blame.highlight.locations": [
+        "gutter",
+        "line",
+        "overview"
+    ],
+    "gitlens.keymap": "chorded",
+    "gitlens.advanced.messages": {
+        "suppressShowKeyBindingsNotice": true
+    },
+    "git.autofetch": true,
+    "extensions.ignoreRecommendations": false,
+    "yaml.format.enable": true,
+    "liveshare.languages.allowGuestCommandControl": true,
+    "editor.formatOnSaveMode": "modifications",
+    "editor.defaultFormatter": "ms-vscode.powershell-preview",
+    "git.allowForcePush": true,
+    "git.autoStash": true,
+    "git.fetchOnPull": true,
+    "git.rebaseWhenSync": true,
+    "terminal.integrated.scrollback": 5000,
+    "workbench.editorAssociations": [
+        {
+            "viewType": "jupyter-notebook",
+            "filenamePattern": "*.ipynb"
+        }
+    ],
+    "jupyter.insidersChannel": "off",
+}

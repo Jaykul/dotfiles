@@ -1,0 +1,129 @@
+[
+    {
+        "key": "ctrl+,",
+        "command": "workbench.action.openSettings2"
+    },
+    {
+        "key": "ctrl+right",
+        "command": "cursorWordStartRight",
+        "when": "editorTextFocus"
+    },
+    {
+        "key": "ctrl+shift+right",
+        "command": "cursorWordStartRightSelect",
+        "when": "editorTextFocus"
+    },
+    {
+        "key": "ctrl+backspace",
+        "command": "deleteWordStartLeft",
+        "when": "editorTextFocus"
+    },
+    {
+        "key": "ctrl+delete",
+        "command": "deleteWordStartRight",
+        "when": "editorTextFocus"
+    },
+    {
+        "key": "ctrl+shift+s",
+        "command": "workbench.action.files.saveAll"
+    },
+    {
+        "key": "ctrl+k s",
+        "command": "-workbench.action.files.saveAll"
+    },
+    {
+        "key": "ctrl+alt+s",
+        "command": "workbench.action.files.saveAs"
+    },
+    {
+        "key": "ctrl+shift+s",
+        "command": "-workbench.action.files.saveAs"
+    },
+    {
+        "key": "alt+p",
+        "command": "extension.presentationMode"
+    },
+    {
+        "key": "alt+p",
+        "command": "extension.presentationModeExit",
+        "when": "inPresentationMode"
+    },
+    {
+        "key": "escape",
+        "command": "-extension.presentationModeExit",
+        "when": "inPresentationMode"
+    },
+    {
+        "key": "ctrl+alt+p",
+        "command": "vscode-revealjs.showRevealJS"
+    },
+    {
+        "key": "alt+s",
+        "command": "workbench.action.toggleScreencastMode"
+    },
+    {
+        "key": "ctrl+r",
+        "command": "workbench.action.quickOpenRecent"
+    },
+    {
+        "key": "ctrl+shift+r",
+        "command": "workbench.action.openRecent"
+    },
+    {
+        "key": "ctrl+r",
+        "command": "-workbench.action.openRecent"
+    },
+    {
+        "key": "shift+tab",
+        "command": "-outdent",
+        "when": "editorTextFocus && !editorReadonly && !editorTabMovesFocus"
+    },
+    {
+        "key": "shift+tab",
+        "command": "editor.action.outdentLines",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "ctrl+[",
+        "command": "-editor.action.outdentLines",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "ctrl+k tab",
+        "command": "editor.action.indentationToSpaces"
+    },
+    {
+        "key": "ctrl+[",
+        "command": "expand-selection-to-scope.expand"
+    },
+    {
+        "key": "ctrl+shift+t",
+        "command": "workbench.action.tasks.test"
+    },
+    {
+        "key": "ctrl+shift+b",
+        "command": "workbench.action.tasks.build"
+    },
+    {
+        "key": "alt+t",
+        "command": "workbench.action.tasks.runTask"
+    },
+    {
+        "key": "ctrl+shift+o",
+        "command": "workbench.action.files.openFolder"
+    },
+    {
+        "key": "ctrl+k ctrl+o",
+        "command": "-workbench.action.files.openFolder"
+    },
+    {
+        "key": "ctrl+shift+o",
+        "command": "workbench.action.files.openLocalFolder",
+        "when": "remoteFileDialogVisible"
+    },
+    {
+        "key": "ctrl+k ctrl+o",
+        "command": "-workbench.action.files.openLocalFolder",
+        "when": "remoteFileDialogVisible"
+    }
+]
