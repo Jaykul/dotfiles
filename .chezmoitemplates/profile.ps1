@@ -4,6 +4,8 @@ trap { Write-Warning ($_.ScriptStackTrace | Out-String) }
 # Except that Azure CloudShell pwsh used to freak out if you tried to load these explicitly.
 Import-Module -Name Microsoft.PowerShell.Management, Microsoft.PowerShell.Security, Microsoft.PowerShell.Utility -Verbose:$false
 
+$ProfileDir = Split-Path $Profile.CurrentUserAllHosts
+{{ if eq .chezmoi.username "LD\\joelbennett" -}}
 # Shortcuts for paths that you will use a lot.
 $ldx = "C:\ldx"
 
@@ -12,11 +14,10 @@ $dscripts = "$ldx\DevOpsScripts"
 $toolkit = "$dscripts\Toolkit"
 $deut = "$ldx\Deuterium"
 $chamber = "$deut\chamber"
-$ProfileDir = Split-Path $Profile.CurrentUserAllHosts
+{{- end -}}
 
 # PART 1: Fix the PSModulePath
-function Select-UniquePath
-{
+function Select-UniquePath {
     #
     #    .SYNOPSIS
     #        Select-UniquePath normalizes path variables and ensures only folders that actually currently exist are in them.
@@ -40,45 +41,36 @@ function Select-UniquePath
         [AllowNull()]
         [string]$Delimiter = [IO.Path]::PathSeparator
     )
-    begin
-    {
+    begin {
         # Write-Information "Select-UniquePath $Delimiter $Path" -Tags "Trace", "Enter"
         [string[]]$Output = @()
         [string[]]$oldFolders = @()
-        $CaseInsensitive = $false -notin (Test-Path $PSScriptRoot.ToLowerInvariant(), $PSScriptRoot.ToUpperInvariant())
+        $CaseInsensitive = $false -notin (Test-Path $ProfileDir.ToLowerInvariant(), $ProfileDir.ToUpperInvariant())
     }
-    process
-    {
+    process {
         $Output += $(
             # Split and trim trailing slashes to normalize, and drop empty strings
             $oldFolders += $folders = $Path -split $Delimiter -replace '[\\\/]$' -gt ""
 
             # Remove duplicates that are only different by case on FileSystems that are not case-sensitive
-            if ($CaseInsensitive)
-            {
+            if ($CaseInsensitive) {
                 # Converting a path with wildcards forces Windows to calculate the ACTUAL case of the path
                 $folders -replace '(?<!:|\\|/|\*)(\\|/|$)', '*$1'
-            }
-            else
-            {
+            } else {
                 $folders
             }
         )
     }
-    end
-    {
+    end {
         # Use Get-Item -Force to ensure we don't loose hidden folders
         # This won't work: Convert-Path C:\programdata*
         # But make sure we didn't add anything that wasn't already there
         [string[]]$Output = (Get-Item $Output -Force).FullName | Where-Object { $_ -iin $oldFolders }
 
-        if ((-not $AsArray) -and $Delimiter)
-        {
+        if ((-not $AsArray) -and $Delimiter) {
             # This is just faster than Select-Object -Unique
             [System.Linq.Enumerable]::Distinct($Output) -join $Delimiter
-        }
-        else
-        {
+        } else {
             [System.Linq.Enumerable]::Distinct($Output)
         }
         # Write-Information "Select-UniquePath $Delimiter $Path" -Tags "Trace", "Exit"
@@ -95,8 +87,6 @@ function Select-UniquePath
 # 4. I don't worry about x86 because I never use it.
 # 5. I don't worry about linux because I add paths based on `$PSScriptRoot`, `$Profile` and `$PSHome`
 $Env:PSModulePath =
-    # Prioritize "this" location (e.g. CloudDrive) UNLESS it's ~\projects\modules
-    @(if (($ModuleRootParent = Split-Path $PSScriptRoot) -ne "$Home\Projects\Modules") { $ModuleRootParent }) +
     # The normal first location in PSModulePath is the "Modules" folder next to the real profile:
     @(Join-Path $ProfileDir Modules) +
     # After that, whatever is in the environment variable
@@ -145,33 +135,11 @@ if (Get-Module PSReadline) {
 
     Set-PSReadLineOption -HistoryNoDuplicates:$false -MaximumHistoryCount 8kb
 
-    if ($PSVersionTable.PSVersion -ge "7.1") {
+    if ((Get-Module PSReadLine).Version -ge "2.2") {
         Set-PSReadLineOption -PredictionSource HistoryAndPlugin -PredictionViewStyle ListView
     } else {
-        Set-PSReadLineOption -PredictionSource History -PredictionViewStyle ListView
+        Set-PSReadLineOption -PredictionSource History
     }
-}
-
-# Make your life easier, set your deuterium path as a default
-# This allows you to just Import-LDAppSetting "PathToFile"  without having to explicitly add -DeuteriumPath $deut
-# Note that wildcard means this globally affects ANY parameter to ANY script or cmdlet where the parameter is named "DeuteriumPath"
-$PSDefaultParameterValues["*:DeuteriumPath"] = "$deut"
-
-if ($host.Name -eq "Visual Studio Code Host")
-{
-    # This module and command are only useable in VS Code
-    Import-Module EditorServicesCommandSuite
-    Import-EditorCommand -Module EditorServicesCommandSuite
-
-    # in VS Code, you probably want your terminal to start in the project directory
-    if ($psEditor.Workspace.Path)
-    {
-        Set-Location ([Uri]$psEditor.Workspace.Path).AbsolutePath
-    }
-}
-else
-{
-    Set-Location $ldx
 }
 
 # PART 3. Import other modules
@@ -180,23 +148,21 @@ else
 
 # Note these are dependencies of the Profile module, but it's faster to load them explicitly up front
 $DefaultModules = @(
-    if ($Env:WT_SESSION)
-    {
+    @{ ModuleName = "Configuration"; ModuleVersion = "1.4.0" }
+    @{ ModuleName = "Pansies"; ModuleVersion = "2.1.0" }
+
+    if ($Env:WT_SESSION) {
         @{ ModuleName = "EzTheme"; ModuleVersion = "0.0.1" }
         @{ ModuleName = "Theme.PowerShell"; ModuleVersion = "0.0.1" }
         @{ ModuleName = "Theme.PSReadline"; ModuleVersion = "0.0.1" }
         @{ ModuleName = "Theme.Terminal"; ModuleVersion = "0.0.1" }
-    }
-    else
-    {
+    } else {
         @{ ModuleName = "EzTheme"; ModuleVersion = "0.0.1" }
         @{ ModuleName = "Theme.PowerShell"; ModuleVersion = "0.0.1" }
         @{ ModuleName = "Theme.PSReadline"; ModuleVersion = "0.0.1" }
     }
 
     @{ ModuleName = "Environment"; RequiredVersion = "1.1.0" }
-    @{ ModuleName = "Configuration"; RequiredVersion = "1.4.0" }
-    @{ ModuleName = "Pansies"; RequiredVersion = "2.1.0" }
     @{ ModuleName = "posh-git"; ModuleVersion = "1.0.0" }
     @{ ModuleName = "PowerLine"; ModuleVersion = "3.3.0" }
     # @{ ModuleName="PSReadLine";       ModuleVersion="2.1.0" }
@@ -204,35 +170,26 @@ $DefaultModules = @(
     @{ ModuleName = "DefaultParameter"; RequiredVersion = "2.0.0" }
     @{ ModuleName = "ErrorView"; RequiredVersion = "0.0.2" }
     # @{ ModuleName = "Profile"; ModuleVersion = "1.3.0" }
-
+    {{ if eq .chezmoi.username "LD\\joelbennett" -}}
     @{ ModuleName = "LDOther"; ModuleVersion = "0.5.0" }
     @{ ModuleName = "LDUtility"; ModuleVersion = "5.7.1" }
     @{ ModuleName = "LDXGet"; ModuleVersion = "6.0.4" }
-
+    {{- end }}
 )
 
-function Import-DefaultModule
-{
+function Import-DefaultModule {
     [Alias("def")]
     [CmdletBinding()]
     param(
         [switch]$Clear
     )
-    # There is a bug in this if you import it FullyQualified?
-    Import-Module EzTheme
-
     Import-Module -FullyQualifiedName $DefaultModules -Scope Global
 
-    if (Test-Elevation)
-    {
+    if (Test-Elevation) {
         Import-Theme Lightly -IncludeModule Theme.PowerShell, Theme.PSReadLine, Theme.Terminal, PowerLine
-    }
-    elseif ($PSVersionTable.PSVersion.Major -le 5)
-    {
+    } elseif ($PSVersionTable.PSVersion.Major -le 5) {
         Import-Theme PS5
-    }
-    else
-    {
+    } else {
         Import-Theme Darkly -IncludeModule Theme.PowerShell, Theme.PSReadLine, Theme.Terminal, PowerLine
     }
     function global:Reset-Prompt {
@@ -248,7 +205,14 @@ function Import-DefaultModule
             { Get-Date -f "T" }
             { "`n" }
             { New-PowerLineBlock "I ${fg:DodgerBlue3}&hearts;${fg:Black} PS" -Bg SkyBlue -Fg Black }
-        ) -SetCurrentDirectory -PowerLineFont -Colors "Gray20", "Gray54"
+        ) -SetCurrentDirectory -PowerLineFont -Colors "Gray20", "Gray54" -Title {
+            @(
+                if (Test-Elevation) { [char]0xf132 }
+                if ($GitStatus) {"$($GitStatus.RepoName) [$($GitStatus.Branch)]"} else {Get-ShortenedPath}
+                "PS$($PSVersionTable.PSVersion.ToString(2)) (pid $PID)"
+                if ([IntPtr]::Size -eq 4) {"32-bit"}
+            ) -join " "
+        }
 
         Set-PSReadLineOption -PromptText @(
             "$([char]27)[30m$([char]27)[48;2;135;206;235mI $([char]27)[38;2;24;116;205m♥$([char]27)[30m PS$([char]27)[49m$([char]27)[38;2;135;206;235m"
@@ -264,13 +228,14 @@ function Import-DefaultModule
     $global:GitPromptSettings.BeforeStatus = ''
     $global:GitPromptSettings.AfterStatus = ''
     $global:GitPromptSettings.PathStatusSeparator = ''
-    $global:GitPromptSettings.BeforeStash.Text = '&ReverseSeparator;'
-    $global:GitPromptSettings.AfterStash.Text = '&Separator;'
+    $global:GitPromptSettings.BeforeStash.Text = "$(Text '&ReverseSeparator;')"
+    $global:GitPromptSettings.AfterStash.Text = "$(Text '&Separator;')"
 
-    Set-PSReadLineOption -ContinuationPrompt (Text "&ColorSeparator; ")
+    Set-PSReadLineOption -ContinuationPrompt "$(Text '&ColorSeparator; ')"
 
     if ($Clear) { Clear-Host }
 
+    {{- if eq .chezmoi.username "LD\\joelbennett" -}}
     # Gives you tab completion on -Component, -Environment, -Datacenter, -ComputerName, -Role parameters on all commands in the below modules.
     # Beware the more modules you add to this list, the longer you powershell profile will take to set up.
     Update-LDArgumentCompleter -ModuleName "LDXGet", "LDXSet", "LDNetworking", "LDF5", "LDServerManagement"
@@ -279,22 +244,33 @@ function Import-DefaultModule
     $Now = Get-Date
     $LDUtilityManifest = Get-Module -List LDUtility | Get-Item | Select-Object -First 1
     $Age = ($Now - $LDUtilityManifest.LastWriteTime).TotalHours
-    if ($Age -gt 12)
-    {
+    if ($Age -gt 12) {
         Update-LDModule -Scope CurrentUser -Clean -Verbose
         $LDUtilityManifest.LastWriteTime = $Now
     }
+    {{- end }}
 }
 
-## Only VSCode Specific
+{{- if eq .chezmoi.username "LD\\joelbennett" -}}
+# Make your life easier, set your deuterium path as a default
+$PSDefaultParameterValues["*:DeuteriumPath"] = "$deut"
+{{- end }}
+# This allows you to just Import-LDAppSetting "PathToFile"  without having to explicitly add -DeuteriumPath $deut
+# Note that wildcard means this globally affects ANY parameter to ANY script or cmdlet where the parameter is named "DeuteriumPath"
+
 if ($host.Name -eq "Visual Studio Code Host") {
+    # This module and command are only useable in VS Code
     Import-Module EditorServicesCommandSuite
     Import-EditorCommand -Module EditorServicesCommandSuite
 
+    # in VS Code, you probably want your terminal to start in the project directory
     if ($psEditor.Workspace.Path) {
-        # in VS Code, start in the workspace!
         Set-Location ([Uri]$psEditor.Workspace.Path).AbsolutePath
     }
-} else {
+    {{ if eq .chezmoi.username "LD\\joelbennett" -}}
+} elseif ($ldx) {
     Set-Location $ldx
+    {{- end }}
+} else {
+    Set-Location $ProfileDir
 }
