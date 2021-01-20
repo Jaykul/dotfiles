@@ -135,8 +135,13 @@ if (Get-Module PSReadline) {
 
     Set-PSReadLineOption -HistoryNoDuplicates:$false -MaximumHistoryCount 8kb
 
+    # this nonsense is temporary, just because I'm using a pre-release PSReadLine and I love it...
     if ((Get-Module PSReadLine).Version -ge "2.2") {
-        Set-PSReadLineOption -PredictionSource HistoryAndPlugin -PredictionViewStyle ListView
+        if ($PSVersionTable.PSVersion -ge "7.1") {
+            Set-PSReadLineOption -PredictionSource HistoryAndPlugin -PredictionViewStyle ListView
+        } else {
+            Set-PSReadLineOption -PredictionSource History -PredictionViewStyle ListView
+        }
     } else {
         Set-PSReadLineOption -PredictionSource History
     }
