@@ -269,10 +269,14 @@ if ($host.Name -eq "Visual Studio Code Host") {
     Import-Module EditorServicesCommandSuite
     Import-EditorCommand -Module EditorServicesCommandSuite
 
-    # in VS Code, you probably want your terminal to start in the project directory
-    if ($psEditor.Workspace.Path) {
-        Set-Location ([Uri]$psEditor.Workspace.Path).AbsolutePath
-    }
+    # # in VS Code, you probably want your terminal to start in the project directory
+    # if ($psEditor.Workspace.Path) {
+    #     Set-Location ([Uri]$psEditor.Workspace.Path).AbsolutePath
+    # }
+}
+
+if ($ENV:TERM_PROGRAM -eq 'vscode') {
+    # Do nothing, and let it open in the working folder?
     {{ if eq .chezmoi.username "LD\\joelbennett" -}}
 } elseif ($ldx) {
     Set-Location $ldx
