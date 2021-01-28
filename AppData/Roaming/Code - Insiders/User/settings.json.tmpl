@@ -195,9 +195,26 @@
             },
         ]
     },
-
-    //******** extensions will add new settings at the bottom - don't assume I customized this stuff ***********//
-    "python.pythonPath": "C:\\ProgramData\\Anaconda3\\python.exe",
+    // GitLens is one of the core extensions, in my book
+    "gitlens.remotes":[
+        {
+            "domain": "tfs",
+            "type": "Custom",
+            "name": "Azure DevOps Server",
+            "protocol": "https",
+            "urls": {
+                "repository": "https://tfs/${repo}",
+                "branches": "https://tfs/${repo}/branches",
+                "branch": "https://tfs/${repo}?version=GB${branch}",
+                "commit": "https://tfs/${repo}/commit/${id}",
+                "file": "https://tfs/${repo}?path=/${file}",
+                "fileInBranch": "https://tfs/${repo}?path=${file}&version=GB${branch}",
+                "fileInCommit": "https://tfs/${repo}/commit/${id}?_a=compare&path=/${file}",
+                "fileLine": "#L${line}",
+                "fileRange": "#L${start}-L${end}"
+            }
+        }
+    ],
     "gitlens.views.fileHistory.enabled": true,
     "gitlens.views.lineHistory.enabled": true,
     "gitlens.views.repositories.location": "scm",
@@ -214,12 +231,15 @@
     "gitlens.advanced.messages": {
         "suppressShowKeyBindingsNotice": true
     },
-    "git.autofetch": true,
+
+    //******** extensions will add new settings at the bottom - don't assume I customized this stuff ***********//
+    "python.pythonPath": "C:\\ProgramData\\Anaconda3\\python.exe",
     "extensions.ignoreRecommendations": false,
     "yaml.format.enable": true,
     "liveshare.languages.allowGuestCommandControl": true,
     "editor.formatOnSaveMode": "modifications",
     "editor.defaultFormatter": "ms-vscode.powershell-preview",
+    "git.autofetch": true,
     "git.allowForcePush": true,
     "git.autoStash": true,
     "git.fetchOnPull": true,
@@ -231,5 +251,5 @@
             "filenamePattern": "*.ipynb"
         }
     ],
-    "jupyter.insidersChannel": "off",
+    "jupyter.insidersChannel": "off"
 }
