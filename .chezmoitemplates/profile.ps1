@@ -1,9 +1,4 @@
 trap { Write-Warning ($_.ScriptStackTrace | Out-String) }
-# # # # # # # # # # # Bleeping Computer # # # # # # # # # # #
-# These get imported no matter what, but we can save a few ms by importing them ourselves
-# Except that Azure CloudShell pwsh used to freak out if you tried to load these explicitly.
-Import-Module -Name Microsoft.PowerShell.Management, Microsoft.PowerShell.Security, Microsoft.PowerShell.Utility -Verbose:$false
-
 $ProfileDir = Split-Path $Profile.CurrentUserAllHosts
 {{ if eq .chezmoi.username "LD\\joelbennett" -}}
 # Shortcuts for paths that you will use a lot.
