@@ -270,12 +270,11 @@ if ($host.Name -eq "Visual Studio Code Host") {
     # }
 }
 
-if ($ENV:TERM_PROGRAM -eq 'vscode') {
-    # Do nothing, and let it open in the working folder?
-    {{ if eq .chezmoi.username "LD\\joelbennett" -}}
-} elseif ($ldx) {
-    Set-Location $ldx
-    {{- end }}
-} else {
+if ($pwd.Path -eq "$Env:SystemRoot\System32") {
     Set-Location $ProfileDir
+    {{- if eq .chezmoi.username "LD\\joelbennett" -}}
+    if ($ldx) {
+        Set-Location $ldx
+    }
+    {{- end }}
 }
