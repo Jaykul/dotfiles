@@ -252,7 +252,25 @@ function Import-DefaultModule {
     {{- end }}
 }
 
+
 {{- if eq .chezmoi.username "LD\\joelbennett" -}}
+function Clear-Policy {
+    [Alias("clap")]
+    [CmdletBinding()]
+    param(
+        [string[]]$Policies = @("Microsoft\Edge", "Google\Chrome")
+    )
+    begin {
+        $Roots = "HKLM:\SOFTWARE\Policies\", "HKCU:\SOFTWARE\Policies\"
+    }
+    process {
+        $Paths = foreach($Policy in $Policies) {
+            $Roots | Join-Path -ChildPath $Policy
+        }
+        Start-Process pwsh -Verb RunAs -ArgumentList "-Command ""&{Remove-Item '$($Paths -join "','")' -Recurse -ErrorAction SilentlyContinue -Confirm}"""
+    }
+}
+
 # Make your life easier, set your deuterium path as a default
 $PSDefaultParameterValues["*:DeuteriumPath"] = "$deut"
 {{- end }}
