@@ -1,0 +1,4 @@
+{{- if stat (joinPath .chezmoi.homeDir "OneDrive - PoshCode") -}}
+# Ignore 'OneDrive - PoshCode' unless it already exists
+OneDrive - PoshCode
+{{- end }}
