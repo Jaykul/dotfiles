@@ -98,19 +98,35 @@ if ($Age -gt 12) {
 }
 
 function Clear-Policy {
+    <#
+        .SYNOPSIS
+            Run PowerShell elevated to delete policy nodes from the registry
+        .DESCRIPTION
+            As a developer, I have full admin rights on my laptop, but GPO's still break things from time to time.
+            Since most of the policies can be removed in the registry, I'm adding my removal of those things here.
+
+            The Microsoft\FVE policy breaks Docker: https://github.com/docker/for-win/issues/1297
+
+            The Microsoft\Edge and Google\Chrome policies at loanDepot
+            - Made my new tab require authentication
+            - Removed my ability to reopen previous tabs when I restart my browser
+    #>
     [Alias("clap")]
     [CmdletBinding()]
     param(
-        [string[]]$Policies = @("Microsoft\Edge", "Google\Chrome")
+        [string[]]$Policies = @("Microsoft\Edge", "Google\Chrome", "Microsoft\FVE")
     )
     begin {
-        $Roots = "HKLM:\SOFTWARE\Policies\", "HKCU:\SOFTWARE\Policies\"
+        $Roots = "HKLM:\SOFTWARE\Policies\", "HKCU:\SOFTWARE\Policies\", "HKLM:\SYSTEM\CurrentControlSet\Policies"
     }
     process {
         $Paths = foreach($Policy in $Policies) {
-            $Roots | Join-Path -ChildPath $Policy
+            $Roots | Join-Path -ChildPath $Policy | Where-Object { $_ | Test-Path}
         }
-        Start-Process pwsh -Verb RunAs -ArgumentList "-Command ""&{Remove-Item '$($Paths -join "','")' -Recurse -ErrorAction SilentlyContinue -Confirm}"""
+        # If any of these policy folders exist, run PowerShell elevated to remove them
+        if ($Paths) {
+            Start-Process pwsh -Verb RunAs -ArgumentList "-Command ""&{Remove-Item '$($Paths -join "','")' -Recurse -ErrorAction SilentlyContinue -Confirm}"""
+        }
     }
 }
 
