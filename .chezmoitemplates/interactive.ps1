@@ -97,37 +97,27 @@ if ($Age -gt 12) {
     $LDUtilityManifest.LastWriteTime = $Now
 }
 
-function Clear-Policy {
-    <#
-        .SYNOPSIS
-            Run PowerShell elevated to delete policy nodes from the registry
-        .DESCRIPTION
-            As a developer, I have full admin rights on my laptop, but GPO's still break things from time to time.
-            Since most of the policies can be removed in the registry, I'm adding my removal of those things here.
+<#
+As a developer, I have full admin rights on my laptop...
+But our IT department still deploys GPO's that break things from time to time.
+So for breaking policies that can be removed in the registry, I just fix it.
 
-            The Microsoft\FVE policy breaks Docker: https://github.com/docker/for-win/issues/1297
+The Microsoft\FVE policy breaks Docker: https://github.com/docker/for-win/issues/1297
 
-            The Microsoft\Edge and Google\Chrome policies at loanDepot
-            - Made my new tab require authentication
-            - Removed my ability to reopen previous tabs when I restart my browser
-    #>
-    [Alias("clap")]
-    [CmdletBinding()]
-    param(
-        [string[]]$Policies = @("Microsoft\Edge", "Google\Chrome", "Microsoft\FVE")
-    )
-    begin {
-        $Roots = "HKLM:\SOFTWARE\Policies\", "HKCU:\SOFTWARE\Policies\", "HKLM:\SYSTEM\CurrentControlSet\Policies"
-    }
-    process {
-        $Paths = foreach($Policy in $Policies) {
-            $Roots | Join-Path -ChildPath $Policy | Where-Object { $_ | Test-Path}
-        }
-        # If any of these policy folders exist, run PowerShell elevated to remove them
-        if ($Paths) {
-            Start-Process pwsh -Verb RunAs -ArgumentList "-Command ""&{Remove-Item '$($Paths -join "','")' -Recurse -ErrorAction SilentlyContinue -Confirm}"""
-        }
-    }
+The Microsoft\Edge and Google\Chrome policies force startup options
+#>
+
+$Roots = @(
+    "HKLM:\SOFTWARE\Policies\Microsoft\Edge"
+    "HKLM:\SOFTWARE\Policies\Google\Chrome"
+    "HKCU:\SOFTWARE\Policies\Microsoft\Edge"
+    "HKCU:\SOFTWARE\Policies\Google\Chrome"
+)
+
+$Paths = $Roots | Where-Object { $_ | Test-Path }
+# If any of these policy folders exist, run PowerShell elevated to clean up
+if ($Paths) {
+    Start-Process pwsh -Verb RunAs -ArgumentList "-NoProfile -NonInteractive -Command ""&{ Set-ItemProperty HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE FDVDenyWriteAccess 0; Remove-Item 'HKLM:\SOFTWARE\Policies\Microsoft\Edge','HKCU:\SOFTWARE\Policies\Microsoft\Edge','HKLM:\SOFTWARE\Policies\Google\Chrome','HKCU:\SOFTWARE\Policies\Google\Chrome' -Recurse -ErrorAction SilentlyContinue }"""
 }
 
 # Make your life easier, set your deuterium path as a default
