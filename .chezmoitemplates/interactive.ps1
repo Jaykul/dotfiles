@@ -89,12 +89,15 @@ Set-PSReadLineOption -ContinuationPrompt "$(Text '&ColorSeparator; ')"
 Update-LDArgumentCompleter -ModuleName "LDXGet", "LDXSet", "LDNetworking", "LDF5", "LDServerManagement"
 
 # You must regularly Update-LDModule...
-$Now = Get-Date
-$LDUtilityManifest = Get-Module -List LDUtility | Get-Item | Select-Object -First 1
-$Age = ($Now - $LDUtilityManifest.LastWriteTime).TotalHours
-if ($Age -gt 12) {
-    Update-LDModule -Scope CurrentUser -Clean -Verbose
-    $LDUtilityManifest.LastWriteTime = $Now
+# But not from inside VS Code, because when I open VS Code, I'm usually opening 3-6 at a time
+if ($host.Name -ne "Visual Studio Code Host") {
+    $Now = Get-Date
+    $LDUtilityManifest = Get-Module -List LDUtility | Get-Item | Select-Object -First 1
+    $Age = ($Now - $LDUtilityManifest.LastWriteTime).TotalHours
+    if ($Age -gt 12) {
+        Update-LDModule -Scope CurrentUser -Clean -Verbose
+        $LDUtilityManifest.LastWriteTime = $Now
+    }
 }
 
 <#
