@@ -98,31 +98,28 @@ if ($host.Name -ne "Visual Studio Code Host") {
         Update-LDModule -Scope CurrentUser -Clean -Verbose
         $LDUtilityManifest.LastWriteTime = $Now
     }
+    <#
+    As a developer, I have full admin rights on my laptop...
+    But our IT department still deploys GPO's that break things from time to time.
+    So for breaking policies that can be removed in the registry, I just fix it.
+
+    The Microsoft\FVE policy breaks Docker: https://github.com/docker/for-win/issues/1297
+
+    The Microsoft\Edge and Google\Chrome policies force startup options
+    #>
+    $Roots = @(
+        "HKLM:\SOFTWARE\Policies\Microsoft\Edge"
+        "HKLM:\SOFTWARE\Policies\Google\Chrome"
+        "HKCU:\SOFTWARE\Policies\Microsoft\Edge"
+        "HKCU:\SOFTWARE\Policies\Google\Chrome"
+    )
+
+    $Paths = $Roots | Where-Object { $_ | Test-Path }
+    # If any of these policy folders exist, run PowerShell elevated to clean up
+    if ($Paths) {
+        Start-Process pwsh -Verb RunAs -ArgumentList "-NoProfile -NonInteractive -Command ""&{ Set-ItemProperty HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE FDVDenyWriteAccess 0; Remove-Item 'HKLM:\SOFTWARE\Policies\Microsoft\Edge','HKCU:\SOFTWARE\Policies\Microsoft\Edge','HKLM:\SOFTWARE\Policies\Google\Chrome','HKCU:\SOFTWARE\Policies\Google\Chrome' -Recurse -ErrorAction SilentlyContinue }"""
+    }
 }
-
-<#
-As a developer, I have full admin rights on my laptop...
-But our IT department still deploys GPO's that break things from time to time.
-So for breaking policies that can be removed in the registry, I just fix it.
-
-The Microsoft\FVE policy breaks Docker: https://github.com/docker/for-win/issues/1297
-
-The Microsoft\Edge and Google\Chrome policies force startup options
-#>
-
-$Roots = @(
-    "HKLM:\SOFTWARE\Policies\Microsoft\Edge"
-    "HKLM:\SOFTWARE\Policies\Google\Chrome"
-    "HKCU:\SOFTWARE\Policies\Microsoft\Edge"
-    "HKCU:\SOFTWARE\Policies\Google\Chrome"
-)
-
-$Paths = $Roots | Where-Object { $_ | Test-Path }
-# If any of these policy folders exist, run PowerShell elevated to clean up
-if ($Paths) {
-    Start-Process pwsh -Verb RunAs -ArgumentList "-NoProfile -NonInteractive -Command ""&{ Set-ItemProperty HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE FDVDenyWriteAccess 0; Remove-Item 'HKLM:\SOFTWARE\Policies\Microsoft\Edge','HKCU:\SOFTWARE\Policies\Microsoft\Edge','HKLM:\SOFTWARE\Policies\Google\Chrome','HKCU:\SOFTWARE\Policies\Google\Chrome' -Recurse -ErrorAction SilentlyContinue }"""
-}
-
 # Make your life easier, set your deuterium path as a default
 $PSDefaultParameterValues["*:DeuteriumPath"] = "$deut"
 {{- end }}
