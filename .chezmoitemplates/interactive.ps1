@@ -1,3 +1,13 @@
+
+# For default elevated sessions, set the start location where it should be
+if ($pwd.Path -eq "$Env:SystemRoot\System32") {
+    {{ if eq .chezmoi.username "LD\\joelbennett" -}}
+    Set-Location $ldx
+    {{- else -}}
+    Set-Location $ProfileDir
+    {{- end }}
+}
+
 # Note these are dependencies of the Profile module, but it's faster to load them explicitly up front
 $DefaultModules = @(
     @{ ModuleName = "Configuration"; ModuleVersion = "1.4.0" }
@@ -90,7 +100,7 @@ Update-LDArgumentCompleter -ModuleName "LDXGet", "LDXSet", "LDNetworking", "LDF5
 
 # You must regularly Update-LDModule...
 # But not from inside VS Code, because when I open VS Code, I'm usually opening 3-6 at a time
-if ($host.Name -ne "Visual Studio Code Host") {
+if ($ENV:TERM_PROGRAM -ne "vscode") {
     $Now = Get-Date
     $LDUtilityManifest = Get-Module -List LDUtility | Get-Item | Select-Object -First 1
     $Age = ($Now - $LDUtilityManifest.LastWriteTime).TotalHours
@@ -127,20 +137,7 @@ $PSDefaultParameterValues["*:DeuteriumPath"] = "$deut"
 # Note that wildcard means this globally affects ANY parameter to ANY script or cmdlet where the parameter is named "DeuteriumPath"
 
 if ($host.Name -eq "Visual Studio Code Host") {
-    # This module and command are only useable in VS Code
+    # This module and command are only useable in the "PowerShell Integrated Console" in VS Code
     Import-Module EditorServicesCommandSuite
     Import-EditorCommand -Module EditorServicesCommandSuite
-
-    # # in VS Code, you probably want your terminal to start in the project directory
-    # if ($psEditor.Workspace.Path) {
-    #     Set-Location ([Uri]$psEditor.Workspace.Path).AbsolutePath
-    # }
-}
-
-if ($pwd.Path -eq "$Env:SystemRoot\System32") {
-    {{ if eq .chezmoi.username "LD\\joelbennett" -}}
-    Set-Location $ldx
-    {{- else -}}
-    Set-Location $ProfileDir
-    {{- end }}
 }
