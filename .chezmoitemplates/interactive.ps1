@@ -70,6 +70,13 @@ if (Test-Elevation) {
     Import-Theme Darkly -IncludeModule Theme.PowerShell, Theme.PSReadLine, Theme.Terminal, PowerLine
 }
 
+$global:WeatherJob = Start-ThreadJob {
+    while ($true) {
+        (Invoke-RestMethod "wttr.in?format=3").Trim() -replace "^.*:\s*| \+|[FC]$"
+        Start-Sleep 300
+    }
+} -Name WeatherQuery
+
 $global:GitPromptSettings = New-GitPromptSettings
 $global:GitPromptSettings.BeforeStatus = ''
 $global:GitPromptSettings.AfterStatus = ''
