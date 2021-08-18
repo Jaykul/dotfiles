@@ -1,3 +1,21 @@
+# Just a handful of additional TypeAccelerators
+$xlr8r = [psobject].assembly.gettype("System.Management.Automation.TypeAccelerators")
+$Accelerate = @{
+    ReadLine   = [Microsoft.PowerShell.PSConsoleReadLine]
+    List       = [System.Collections.Generic.List``1]
+    Dictionary = [System.Collections.Generic.Dictionary``2]
+}
+if ($xlr8r::AddReplace) {
+    $Accelerate.GetEnumerator().ForEach({
+        $xlr8r::AddReplace($_.Key, $_.Value)
+    })
+} else {
+    $Accelerate.GetEnumerator().ForEach({
+        $null = $xlr8r::Remove($_.Key)
+        $xlr8r::Add($_.Key, $_.Value)
+    })
+}
+
 # For default elevated sessions, set the start location where it should be
 if ($pwd.Path -eq "$Env:SystemRoot\System32") {
     {{ if eq .chezmoi.username "LD\\joelbennett" -}}
@@ -81,71 +99,88 @@ Set-PSReadLineKeyHandler Ctrl+h BackwardDeleteWord
 Set-PSReadLineKeyHandler Ctrl+Enter AddLine
 Set-PSReadLineKeyHandler Ctrl+Shift+Enter AcceptAndGetNext
 
-$ReadLine = [Microsoft.PowerShell.PSConsoleReadLine]
 
 Set-PSReadLineKeyHandler -Key Alt+w {
     param($key, $arg)
 
     $line = $null
     $cursor = $null
-    $ReadLine::GetBufferState([ref]$line, [ref]$cursor)
-    $ReadLine::AddToHistory($line)
-    $ReadLine::RevertLine()
+    [ReadLine]::GetBufferState([ref]$line, [ref]$cursor)
+    [ReadLine]::AddToHistory($line)
+    [ReadLine]::RevertLine()
 } -Description "Save current line in history but do not execute"
 
-Set-PSReadLineKeyHandler '(', '{', '[' {
+Set-PSReadLineKeyHandler '(', '{', '[', '"', "'" {
     param($key, $arg)
 
     $closeChar = switch ($key.KeyChar) {
         '(' { [char]')'; break }
         '{' { [char]'}'; break }
         '[' { [char]']'; break }
+        '"' { [char]'"'; break }
+        "'" { [char]"'"; break }
     }
 
     $start = $null
     $length = $null
-    $ReadLine::GetSelectionState([ref]$start, [ref]$length)
+    [ReadLine]::GetSelectionState([ref]$start, [ref]$length)
 
     $command = $null
     $cursor = $null
-    $ReadLine::GetBufferState([ref]$command, [ref]$cursor)
+    [ReadLine]::GetBufferState([ref]$command, [ref]$cursor)
 
     if ($start -ne -1) {
         # Text is selected, wrap it in brackets
-        $ReadLine::Replace($start, $length, $key.KeyChar + $command.SubString($start, $length) + $closeChar)
-        $ReadLine::SetCursorPosition($start + $length + 2)
+        [ReadLine]::Replace($start, $length, $key.KeyChar + $command.SubString($start, $length) + $closeChar)
+        [ReadLine]::SetCursorPosition($start + $length + 2)
     } elseif ($cursor -eq 0 -and $command.length) {
         # Cursor's at the start of the command, wrap the whole command
-        $ReadLine::Replace(0, $command.length, $key.KeyChar + $command + $closeChar)
-        $ReadLine::SetCursorPosition($command.length + 2)
+        [ReadLine]::Replace(0, $command.length, $key.KeyChar + $command + $closeChar)
+        [ReadLine]::SetCursorPosition($command.length + 2)
     } else {
         # Otherwise, do a matching pair
-        $ReadLine::Insert("$($key.KeyChar)$closeChar")
-        $ReadLine::SetCursorPosition($cursor + 1)
+        [ReadLine]::Insert("$($key.KeyChar)$closeChar")
+        [ReadLine]::SetCursorPosition($cursor + 1)
     }
-} -Description "Insert matching braces"
+} -Description "Insert matching braces and quotes"
 
 
-Set-PSReadLineKeyHandler ')', ']', '}' {
+Set-PSReadLineKeyHandler ')', ']', '}', '"', "'" {
     param($key, $arg)
 
-    $line = $null
+    $command = $null
     $cursor = $null
-    $ReadLine::GetBufferState([ref]$line, [ref]$cursor)
+    [ReadLine]::GetBufferState([ref]$command, [ref]$cursor)
 
-    if ($line[$cursor] -eq $key.KeyChar) {
-        $ReadLine::SetCursorPosition($cursor + 1)
+    # If the _next_ character matches this one, just move past it
+    if ($command[$cursor] -eq $key.KeyChar) {
+        [ReadLine]::SetCursorPosition($cursor + 1)
     } else {
-        $ReadLine::Insert("$($key.KeyChar)")
+        [ReadLine]::Insert("$($key.KeyChar)")
     }
-} -Description "Insert closing brace or skip"
+
+    # For unmatched closing parenthesis, wrap the whole command
+    if ($key.KeyChar -eq ')') {
+        $tokens = $null
+        $parseError = $null
+        $ast = $null
+        $cursor = $null
+        [ReadLine]::GetBufferState([ref]$ast, [ref]$tokens, [ref]$parseError, [ref]$cursor)
+        # but only if it's at the VERY end
+        if ($parseError.Extent.Text -eq $key.KeyChar -and $parseError.Extent.EndOffset -eq $cursor) {
+            [ReadLine]::Replace(0, $ast.Extent.EndOffset, "($command)" )
+            [ReadLine]::SetCursorPosition($command.length + 2)
+        }
+    }
+
+} -Description "Insert or skip closing brace or wrap!"
 
 Set-PSReadLineKeyHandler Backspace {
     param($key, $arg)
 
     $line = $null
     $cursor = $null
-    $ReadLine::GetBufferState([ref]$line, [ref]$cursor)
+    [ReadLine]::GetBufferState([ref]$line, [ref]$cursor)
 
     if ($cursor -gt 0) {
         $toMatch = $null
@@ -160,12 +195,90 @@ Set-PSReadLineKeyHandler Backspace {
         }
 
         if ($toMatch -ne $null -and $line[$cursor - 1] -eq $toMatch) {
-            $ReadLine::Delete($cursor - 1, 2)
+            [ReadLine]::Delete($cursor - 1, 2)
         } else {
-            $ReadLine::BackwardDeleteChar($key, $arg)
+            [ReadLine]::BackwardDeleteChar($key, $arg)
         }
     }
 } -Description "Delete smart quotes/parens/braces"
+
+Set-PSReadLineKeyHandler "Alt+]" {
+    param($key, $arg)
+    $start = $null
+    $length = $null
+    [ReadLine]::GetSelectionState([ref]$start, [ref]$length)
+
+    $command = $null
+    $cursor = $null
+    [ReadLine]::GetBufferState([ref]$command, [ref]$cursor)
+
+    # if there's no selection, these should be set to the cursor
+    if ($start -lt 0) { $start = $cursor; $length = 0 }
+    $end = $start + $length
+    # Write-Host "`e[s`e[0;0H`e[32mStart:$start End:$end Length:$Length `e[u"
+
+    # pretend that entire lines are selected
+    if ($start -gt 0) {
+        $start = $command.SubString(0, $start).LastIndexOf("`n") + 1
+    }
+    $end = $end + $command.SubString($end).IndexOf("`n")
+    $length = $end - $start
+    # Write-Host "`e[s`e[2;0H`e[34mStart:$start End:$end Length:$Length `e[u"
+
+    $lines = $command.SubString($start, $length)
+    $count = ($lines -split "`n").Count
+    # Write-Host "`e[s`e[3;0H`e[36m$lines`e[u"
+    # Write-Host "`e[s`e[2;0H`e[34mStart:$start End:$end Length:$Length Lines:$Count`e[u"
+    [ReadLine]::Replace($start, $length, ($lines -replace "(?m)^", "    "))
+    [ReadLine]::SetCursorPosition($start)
+    [ReadLine]::SelectLine()
+
+    if ($count -gt 1) {
+        while (--$Count) {
+            [ReadLine]::SelectForwardChar()
+            [ReadLine]::SelectLine()
+        }
+    }
+}
+Set-PSReadLineKeyHandler "Alt+[" {
+    param($key, $arg)
+    $start = $null
+    $length = $null
+    [ReadLine]::GetSelectionState([ref]$start, [ref]$length)
+
+    $command = $null
+    $cursor = $null
+    [ReadLine]::GetBufferState([ref]$command, [ref]$cursor)
+
+    # if there's no selection, these should be set to the cursor
+    if ($start -lt 0) { $start = $cursor; $length = 0 }
+    $end = $start + $length
+    # Write-Host "`e[s`e[0;0H`e[32mStart:$start End:$end Length:$Length `e[u"
+
+    # pretend that entire lines are selected
+    if ($start -gt 0) {
+        $start = $command.SubString(0, $start).LastIndexOf("`n") + 1
+    }
+    $end = $end + $command.SubString($end).IndexOf("`n")
+    $length = $end - $start
+    # Write-Host "`e[s`e[2;0H`e[34mStart:$start End:$end Length:$Length `e[u"
+
+    $lines = $command.SubString($start, $length)
+    $count = ($lines -split "`n").Count
+    # Write-Host "`e[s`e[3;0H`e[36m$lines`e[u"
+    # Write-Host "`e[s`e[2;0H`e[34mStart:$start End:$end Length:$Length Lines:$Count`e[u"
+
+    [ReadLine]::Replace($start, $length, ($lines -replace "(?m)^    ", ""))
+    [ReadLine]::SetCursorPosition($start)
+    [ReadLine]::SelectLine()
+
+    if ($count -gt 1) {
+        while (--$Count) {
+            [ReadLine]::SelectForwardChar()
+            [ReadLine]::SelectLine()
+        }
+    }
+}
 
 # Cycle through arguments on current line and select the text. This makes it easier to quickly change the argument if re-running a previously run command from the history
 # or if using a psreadline predictor. You can also use a digit argument to specify which argument you want to select, i.e. Alt+1, Alt+a selects the first argument
@@ -173,9 +286,11 @@ Set-PSReadLineKeyHandler Backspace {
 Set-PSReadLineKeyHandler -Key Alt+a {
     param($key, $arg)
 
+    $tokens = $null
+    $parseError = $null
     $ast = $null
     $cursor = $null
-    $ReadLine::GetBufferState([ref]$ast, [ref]$null, [ref]$null, [ref]$cursor)
+    [ReadLine]::GetBufferState([ref]$ast, [ref]$tokens, [ref]$parseError, [ref]$cursor)
 
     $asts = $ast.FindAll({
             $args[0] -is [System.Management.Automation.Language.ExpressionAst] -and
@@ -184,7 +299,7 @@ Set-PSReadLineKeyHandler -Key Alt+a {
         }, $true)
 
     if ($asts.Count -eq 0) {
-        $ReadLine::Ding()
+        [ReadLine]::Ding()
         return
     }
 
@@ -214,9 +329,9 @@ Set-PSReadLineKeyHandler -Key Alt+a {
         $endOffsetAdjustment = 2
     }
 
-    $ReadLine::SetCursorPosition($nextAst.Extent.StartOffset + $startOffsetAdjustment)
-    $ReadLine::SetMark($null, $null)
-    $ReadLine::SelectForwardChar($null, ($nextAst.Extent.EndOffset - $nextAst.Extent.StartOffset) - $endOffsetAdjustment)
+    [ReadLine]::SetCursorPosition($nextAst.Extent.StartOffset + $startOffsetAdjustment)
+    [ReadLine]::SetMark($null, $null)
+    [ReadLine]::SelectForwardChar($null, ($nextAst.Extent.EndOffset - $nextAst.Extent.StartOffset) - $endOffsetAdjustment)
 } -Description "Select next argument in the command line (or use a digit to select by index)"
 
 
