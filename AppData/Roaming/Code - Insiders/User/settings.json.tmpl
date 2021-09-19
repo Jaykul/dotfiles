@@ -1,3 +1,4 @@
+{{ /* Go Template */ }}
 {
     //******** Settings everyone should use ***********//
     // Everyone should keep files git friendly
@@ -41,9 +42,6 @@
     //******** Personal Preferences ***********//
     // The latest thing in syntax highlighting is sometimes buggy, but we need to try it and report those bugs ...
     "editor.semanticHighlighting.enabled": true,
-
-    // Nobody cares about the white space at the end of lines, right?
-    "diffEditor.ignoreTrimWhitespace": false,
     // I like the sidebar on the right
     "workbench.sideBar.location": "right",
 
@@ -57,7 +55,8 @@
     // Here we can fix file associations that aren't handled
     "files.associations": {
         "*.ps1xml": "xml",
-        "*.audit": "xml"
+        "*.audit": "xml",
+        "*.yml": "yaml"
     },
 
     // Your right-click will do _something_, choose:
@@ -133,7 +132,7 @@
         "editor.tabSize": 2,
         "editor.autoIndent": "advanced"
     },
-    "[tf]": {
+    "[terraform]": {
         "editor.tabSize": 2,
         "editor.insertSpaces": true,
         "editor.autoIndent": "advanced"
@@ -238,7 +237,7 @@
     },
 
     //******** extensions will add new settings at the bottom - don't assume I customized this stuff ***********//
-    "python.pythonPath": "C:\\ProgramData\\Anaconda3\\python.exe",
+    "python.pythonPath": "C:\\tools\\miniconda3\\python.exe",
     "extensions.ignoreRecommendations": false,
     "yaml.format.enable": true,
     "liveshare.languages.allowGuestCommandControl": true,
@@ -254,5 +253,16 @@
     "workbench.editorAssociations": {
         "*.ipynb": "jupyter-notebook"
     },
-    "jupyter.insidersChannel": "off"
+    "jupyter.insidersChannel": "off",
+    "workbench.editor.enablePreview": false,
+    "tabnine.experimentalAutoImports": true,
+    "tabnine.receiveBetaChannelUpdates": true,
+    "editor.inlineSuggest.enabled": true,
+    "github.copilot.enable": {
+        "*": true,
+        "yaml": true,
+        "plaintext": true,
+        "markdown": true
+    },
+    "python.defaultInterpreterPath": "C:\\tools\\miniconda3\\python.exe"
 }
