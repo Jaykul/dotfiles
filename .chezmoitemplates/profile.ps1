@@ -2,9 +2,8 @@ trap { Write-Warning ($_.ScriptStackTrace | Out-String) }
 $ProfileDir = [IO.Path]::GetDirectoryName($Profile.CurrentUserAllHosts)
 {{ if eq .chezmoi.username "LD\\joelbennett" -}}
 # Shortcuts for paths that you will use a lot.
-$ldx = "C:\ldx"
-
 # LD Teammates WILL use these variables in scripts they put in confluence:
+$ldx = "C:\ldx"
 $dscripts = "$ldx\DevOpsScripts"
 $toolkit = "$dscripts\Toolkit"
 $deut = "$ldx\Deuterium"

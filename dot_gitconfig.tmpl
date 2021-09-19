@@ -9,9 +9,45 @@
 	rebase = true
 [core]
 	pager = delta
+
 [delta]
-	syntax-theme = Monokai Extended
+	true-color = "always"
+#   24-bit-color = "always"
+	features = unobtrusive-line-numbers darkly
+	syntax-theme = OneHalfDark
+#	hyperlinks = true
+#	hyperlinks-file-link-format = 'file://{path}'
+#	navigate = true
+
+[delta "unobtrusive-line-numbers"]
 	line-numbers = true
+	line-numbers-minus-style = "#ff38b6"
+	line-numbers-zero-style = "#cccccc"
+	line-numbers-plus-style = "#00e0c2"
+	line-numbers-left-format = "{nm:>4} ."
+	line-numbers-right-format = "{np:>4}  "
+	line-numbers-left-style = "#e3ab02"
+	line-numbers-right-style = white
+
+[delta "decorations"]
+	commit-decoration-style = yellow box ul
+	file-style = yellow ul
+	file-decoration-style = white box
+	hunk-header-decoration-style = yellow box
+
+[delta "darkly"]
+	commit-decoration-style = box ul "#34fd50"
+	dark = true
+	file-decoration-style = none
+	file-style = omit
+	hunk-header-decoration-style = "#00b494" ul
+	hunk-header-line-number-style = "#03a4ff"
+	hunk-header-style = line-number syntax
+	plus-emph-style = syntax "#066a57"
+	plus-style = syntax "#03372d"
+	minus-emph-style = normal "#a73f74"
+	minus-style = normal "#5a223e"
+
 [interactive]
 	diffFilter = delta --color-only
 [merge]
@@ -23,3 +59,5 @@
 	colorMoved = default
 [difftool "vscode"]
 	cmd = "code-insiders --wait --diff $LOCAL $REMOTE"
+[init]
+	defaultBranch = main

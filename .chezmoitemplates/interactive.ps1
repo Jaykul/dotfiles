@@ -137,9 +137,13 @@ Set-PSReadLineKeyHandler '(', '{', '[', '"', "'" {
         # Cursor's at the start of the command, wrap the whole command
         [ReadLine]::Replace(0, $command.length, $key.KeyChar + $command + $closeChar)
         [ReadLine]::SetCursorPosition($command.length + 2)
-    } else {
-        # Otherwise, do a matching pair
+    } elseif ($cursor -eq $command.length) {
+        # If we're at the end, do a matching pair
         [ReadLine]::Insert("$($key.KeyChar)$closeChar")
+        [ReadLine]::SetCursorPosition($cursor + 1)
+    } else {
+        # Otherwise, just the character they typed
+        [ReadLine]::Insert("$($key.KeyChar)")
         [ReadLine]::SetCursorPosition($cursor + 1)
     }
 } -Description "Insert matching braces and quotes"
@@ -240,6 +244,7 @@ Set-PSReadLineKeyHandler "Alt+]" {
         }
     }
 }
+
 Set-PSReadLineKeyHandler "Alt+[" {
     param($key, $arg)
     $start = $null
@@ -283,7 +288,7 @@ Set-PSReadLineKeyHandler "Alt+[" {
 # Cycle through arguments on current line and select the text. This makes it easier to quickly change the argument if re-running a previously run command from the history
 # or if using a psreadline predictor. You can also use a digit argument to specify which argument you want to select, i.e. Alt+1, Alt+a selects the first argument
 # on the command line.
-Set-PSReadLineKeyHandler -Key Alt+a {
+Set-PSReadLineKeyHandler -Key "Alt+k" {
     param($key, $arg)
 
     $tokens = $null
@@ -334,6 +339,53 @@ Set-PSReadLineKeyHandler -Key Alt+a {
     [ReadLine]::SelectForwardChar($null, ($nextAst.Extent.EndOffset - $nextAst.Extent.StartOffset) - $endOffsetAdjustment)
 } -Description "Select next argument in the command line (or use a digit to select by index)"
 
+
+Set-PSReadLineKeyHandler -Key "Alt+j" {
+    param($key)
+
+    $tokens = $null
+    $parseError = $null
+    $ast = $null
+    $cursor = $null
+    [ReadLine]::GetBufferState([ref]$ast, [ref]$tokens, [ref]$parseError, [ref]$cursor)
+
+    $asts = @($ast.FindAll({
+            $args[0] -is [System.Management.Automation.Language.ExpressionAst] -and
+            $args[0].Parent -is [System.Management.Automation.Language.CommandAst] -and
+            $args[0].Extent.StartOffset -ne $args[0].Parent.Extent.StartOffset
+        }, $true))
+    [Array]::Reverse($asts)
+
+    if ($asts.Count -eq 0) {
+        [ReadLine]::Ding()
+        return
+    }
+
+    $nextAst = $null
+    foreach ($ast in $asts) {
+        if ($ast.Extent.EndOffset -lt $cursor) {
+            $nextAst = $ast
+            break
+        }
+    }
+
+    if (!$nextAst) {
+        $nextAst = $asts[0]
+    }
+
+    $startOffsetAdjustment = 0
+    $endOffsetAdjustment = 0
+
+    if ($nextAst -is [System.Management.Automation.Language.StringConstantExpressionAst] -and
+        $nextAst.StringConstantType -ne [System.Management.Automation.Language.StringConstantType]::BareWord) {
+        $startOffsetAdjustment = 1
+        $endOffsetAdjustment = 2
+    }
+
+    [ReadLine]::SetCursorPosition($nextAst.Extent.StartOffset + $startOffsetAdjustment)
+    [ReadLine]::SetMark($null, $null)
+    [ReadLine]::SelectForwardChar($null, ($nextAst.Extent.EndOffset - $nextAst.Extent.StartOffset) - $endOffsetAdjustment)
+} -Description "Select next argument in the command line (or use a digit to select by index)"
 
 Set-PSReadLineOption -HistoryNoDuplicates:$false -MaximumHistoryCount 8kb
 
