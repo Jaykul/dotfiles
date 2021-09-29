@@ -420,8 +420,8 @@ if ($ENV:TERM_PROGRAM -ne "vscode") {
     $LDUtilityManifest = Get-Module -List LDUtility | Get-Item | Select-Object -First 1
     $Age = ($Now - $LDUtilityManifest.LastWriteTime).TotalHours
     if ($Age -gt 12) {
-        Update-LDModule -Scope CurrentUser -Clean -Verbose
         $LDUtilityManifest.LastWriteTime = $Now
+        Update-LDModule -Scope CurrentUser -Clean -Verbose
     }
     <#
     As a developer, I have full admin rights on my laptop...
