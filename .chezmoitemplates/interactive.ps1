@@ -421,7 +421,8 @@ if ($ENV:TERM_PROGRAM -ne "vscode") {
     $Age = ($Now - $LDUtilityManifest.LastWriteTime).TotalHours
     if ($Age -gt 12) {
         $LDUtilityManifest.LastWriteTime = $Now
-        Update-LDModule -Scope CurrentUser -Clean -Verbose
+        # Run this super frustrating update in a separate tab in windows terminal
+        wt -w 0 --title "Update-LDModule" -p "Windows PowerShell" PowerShell -NonInteractive -Command Update-LDModule -Scope CurrentUser -Verbose
     }
     <#
     As a developer, I have full admin rights on my laptop...
