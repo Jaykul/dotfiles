@@ -1,8 +1,10 @@
 README.md
 
+# Ignore 'OneDrive - *' unless it already exists
 {{ if not (stat (joinPath .chezmoi.homeDir "OneDrive - PoshCode")) }}
-# Ignore 'OneDrive - PoshCode' unless it already exists
-OneDrive - PoshCode/Documents
+OneDrive - PoshCode
+{{ else if not (stat (joinPath .chezmoi.homeDir "OneDrive - loanDepot")) }}
+OneDrive - loanDepot
 {{ else }}
 Documents
 {{ end }}

@@ -1,4 +1,5 @@
+
 # On Windows PowerShell (ONLY) we can save a few ms by importing these ourselves
 Import-Module -Name Microsoft.PowerShell.Management, Microsoft.PowerShell.Security, Microsoft.PowerShell.Utility -Verbose:$false
 
-{{ template "interactive.ps1" . -}}
+{{ template "profile.ps1" . -}}
