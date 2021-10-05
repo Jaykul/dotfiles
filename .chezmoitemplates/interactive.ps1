@@ -445,6 +445,13 @@ if ($ENV:TERM_PROGRAM -ne "vscode") {
     if ($Paths) {
         Start-Process pwsh -Verb RunAs -ArgumentList "-NoProfile -NonInteractive -Command ""&{ Set-ItemProperty HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE FDVDenyWriteAccess 0; Remove-Item 'HKLM:\SOFTWARE\Policies\Microsoft\Edge','HKCU:\SOFTWARE\Policies\Microsoft\Edge','HKLM:\SOFTWARE\Policies\Google\Chrome','HKCU:\SOFTWARE\Policies\Google\Chrome' -Recurse -ErrorAction SilentlyContinue }"""
     }
+
+    # Corporate keeps pinning things. They obviously don't understand the meaning of "User Pinned"
+    Get-ChildItem "$env:APPDATA\Microsoft\Internet Explorer\Quick Launch\User Pinned\Taskbar" |
+        Where-Object { $_.BaseName -notin "KeePass 2", "File Explorer", "Microsoft Teams", "Visual Studio Code - Insiders", "Outlook" } |
+        ForEach-Object {
+            Start-Process -FilePath $_.FullName -Verb "taskbarunpin"
+        }
 }
 # Make your life easier, set your deuterium path as a default
 $PSDefaultParameterValues["*:DeuteriumPath"] = "$deut"
