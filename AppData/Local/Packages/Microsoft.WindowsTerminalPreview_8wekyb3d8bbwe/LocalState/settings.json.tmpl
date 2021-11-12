@@ -1,12 +1,6 @@
 {
     "$schema": "https://aka.ms/terminal-profiles-schema",
-    "defaultProfile": "{{ if eq .shell "PowerShell"}}{574e775e-4f2a-5b96-ac1e-a2962a402336}{{else}}{61c54bbd-c2c6-5271-96e7-009a87ff44bf}{{end}}",
-    "startOnUserLogin": true,
-    "tabWidthMode": "titleLength",
-    "copyFormatting": "all",
-    "copyOnSelect": false,
-    "actions":
-    [
+    "actions": [
         { "keys": "ctrl+f",          "command": "find" },
         { "keys": "ctrl+n",          "command": "openNewTabDropdown" },
         { "keys": "ctrl+shift+v",    "command": "paste" },
@@ -29,86 +23,99 @@
         { "keys": "ctrl+8",          "command": { "action": "switchToTab", "index": 7 } },
         { "keys": "ctrl+9",          "command": { "action": "switchToTab", "index": 8 } }
     ],
-    "profiles":
-    {
-        "defaults":
-        {
-            "acrylicOpacity": 0.59999999999999998,
+    "copyFormatting": "all",
+    "copyOnSelect": false,
+    "defaultProfile": "{{ if eq .shell "PowerShell"}}{574e775e-4f2a-5b96-ac1e-a2962a402336}{{else}}{61c54bbd-c2c6-5271-96e7-009a87ff44bf}{{end}}",
+    "profiles": {
+        "defaults": {
             "backgroundImageAlignment": "bottomRight",
             "backgroundImageOpacity": 0.5,
             "backgroundImageStretchMode": "none",
             "colorScheme": "Darkly",
             "cursorShape": "vintage",
-            "font":
-            {
+            "font": {
                 "face": "CaskaydiaCove Nerd Font Mono"
             },
+            "opacity": 70,
             "padding": "0, 0, 0, 0",
-            "useAcrylic": false
+            "unfocusedAppearance": {
+                "experimental.retroTerminalEffect": true
+            },
+            "useAcrylic": true
         },
-        "list":
-        [
-            {   "name": "Windows PowerShell",
+        "list": [
+            {
+                "name": "Windows PowerShell",
                 "guid": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
                 "backgroundImage": "ms-appdata:///roaming/Powershell_blue256.png",
                 "commandline": "powershell.exe",
                 "hidden": false,
                 "icon": "ms-appdata:///roaming/PowerShell_blue.png"
             },
-            {   "name": "PowerShell -NoProfile",
+            {
+                "name": "PowerShell -NoProfile",
                 "guid": "{54659ce2-8d1f-40dd-b671-533b9d1635bc}",
                 "backgroundImage": "ms-appdata:///roaming/Powershell_blue256.png",
                 "commandline": "powershell.exe -NoProfile",
                 "icon": "ms-appdata:///roaming/PowerShell_blue.png"
             },
-            {   "name": "PS7 Preview",
+            {
+                "name": "PS7 Preview",
                 "guid": "{a3a2e83a-884a-5379-baa8-16f193a13b21}",
                 "hidden": false,
                 "icon": "ms-appx:///ProfileIcons/pwsh-preview.png",
                 "source": "Windows.Terminal.PowershellCore"
             },
-            {   "name": "PS7 Preview -NoProfile",
+            {
+                "name": "PS7 Preview -NoProfile",
                 "commandline": "C:\\Program Files\\PowerShell\\7-preview\\pwsh.exe -NoProfile",
                 "guid": "{8340ed4a-61a8-4ea0-b524-c33fa2e861e2}",
                 "icon": "ms-appx:///ProfileIcons/pwsh-preview.png",
                 "startingDirectory": "%USERPROFILE%"
             },
-            {   "name": "Command Prompt",
+            {
+                "name": "Command Prompt",
                 "commandline": "cmd.exe",
                 "guid": "{0caa0dad-35be-5f56-a8ff-afceeeaa6101}",
                 "hidden": false
             },
-            {   "name": "Azure Cloud Shell",
+            {
+                "name": "Azure Cloud Shell",
                 "backgroundImage": "ms-appdata:///roaming/Cloud.png",
                 "guid": "{b453ae62-4e3d-5e58-b989-0a998ec441b8}",
                 "hidden": false,
                 "source": "Windows.Terminal.Azure"
             },
-            {   "name": "PwSh",
+            {
+                "name": "PwSh",
                 "backgroundImage": "ms-appdata:///roaming/Powershell_black256.png",
                 "guid": "{574e775e-4f2a-5b96-ac1e-a2962a402336}",
                 "hidden": false,
                 "icon": "ms-appdata:///roaming/PowerShell_black.ico",
                 "source": "Windows.Terminal.PowershellCore"
             },
-            {   "name": "PwSh -NoProfile",
+            {
+                "name": "PwSh -NoProfile",
                 "backgroundImage": "ms-appdata:///roaming/Powershell_black256.png",
                 "commandline": "pwsh.exe -NoProfile",
                 "guid": "{e48db962-18af-4eec-af6a-f77175ef3a71}",
                 "icon": "ms-appdata:///roaming/PowerShell_black.ico",
             },
-            {   "name": "PowerShell (dotnet global)",
+            {
+                "name": "PowerShell (dotnet global)",
                 "guid": "{63e31163-583f-5850-9c1e-24e227dd2da9}",
                 "hidden": false,
                 "source": "Windows.Terminal.PowershellCore"
             },
-            {   "name": "Ubuntu",
+            {
+                "name": "Ubuntu",
                 "guid": "{07b52e3e-de2c-5db4-bd2d-ba144ed6c273}",
                 "hidden": false,
                 "source": "Windows.Terminal.Wsl"
             },
             {{ if eq .chezmoi.username "ZEN\\Jaykul" -}}
-            {   "name": "Matrix",
+            {
+                "name": "Matrix",
                 "guid": "{3fa75d59-8c42-4107-b958-58118f2c2f5c}",
                 "commandline": "ssh azureuser@matrix.poshcode.org",
                 "icon": "C:\\Users\\Jaykul\\OneDrive - PoshCode\\Shared Pictures\\Art\\Logo\\Icons\\matrix.png",
@@ -117,9 +124,9 @@
             {{ end -}}
         ]
     },
-    "schemes":
-    [
-        {   "name": "Campbell",
+    "schemes": [
+        {
+            "name": "Campbell",
             "background": "#0C0C0C",
             "black": "#0C0C0C",
             "blue": "#0037DA",
@@ -141,7 +148,8 @@
             "white": "#CCCCCC",
             "yellow": "#C19C00"
         },
-        {   "name": "Campbell Powershell",
+        {
+            "name": "Campbell Powershell",
             "background": "#012456",
             "black": "#0C0C0C",
             "blue": "#0037DA",
@@ -163,7 +171,8 @@
             "white": "#CCCCCC",
             "yellow": "#C19C00"
         },
-        {   "name": "Darkly",
+        {
+            "name": "Darkly",
             "background": "#212021",
             "black": "#212021",
             "blue": "#01A0E4",
@@ -185,7 +194,8 @@
             "white": "#A5A2A2",
             "yellow": "#FBED02"
         },
-        {   "name": "Lightly",
+        {
+            "name": "Lightly",
             "background": "#FFFFFF",
             "black": "#000000",
             "blue": "#0073C3",
@@ -207,7 +217,8 @@
             "white": "#848388",
             "yellow": "#BB6200"
         },
-        {   "name": "One Half Dark",
+        {
+            "name": "One Half Dark",
             "background": "#282C34",
             "black": "#282C34",
             "blue": "#61AFEF",
@@ -229,7 +240,8 @@
             "white": "#DCDFE4",
             "yellow": "#E5C07B"
         },
-        {   "name": "One Half Light",
+        {
+            "name": "One Half Light",
             "background": "#FAFAFA",
             "black": "#383A42",
             "blue": "#0184BC",
@@ -251,7 +263,8 @@
             "white": "#FAFAFA",
             "yellow": "#C18301"
         },
-        {   "name": "Solarized Dark",
+        {
+            "name": "Solarized Dark",
             "background": "#002B36",
             "black": "#002B36",
             "blue": "#268BD2",
@@ -273,7 +286,8 @@
             "white": "#EEE8D5",
             "yellow": "#B58900"
         },
-        {   "name": "Solarized Light",
+        {
+            "name": "Solarized Light",
             "background": "#FDF6E3",
             "black": "#002B36",
             "blue": "#268BD2",
@@ -295,7 +309,8 @@
             "white": "#EEE8D5",
             "yellow": "#B58900"
         },
-        {   "name": "Tango Dark",
+        {
+            "name": "Tango Dark",
             "background": "#000000",
             "black": "#000000",
             "blue": "#3465A4",
@@ -317,7 +332,8 @@
             "white": "#D3D7CF",
             "yellow": "#C4A000"
         },
-        {   "name": "Tango Light",
+        {
+            "name": "Tango Light",
             "background": "#FFFFFF",
             "black": "#000000",
             "blue": "#3465A4",
@@ -339,7 +355,8 @@
             "white": "#D3D7CF",
             "yellow": "#C4A000"
         },
-        {   "name": "Vintage",
+        {
+            "name": "Vintage",
             "background": "#000000",
             "black": "#000000",
             "blue": "#000080",
@@ -361,5 +378,7 @@
             "white": "#C0C0C0",
             "yellow": "#808000"
         }
-    ]
+    ],
+    "startOnUserLogin": true,
+    "tabWidthMode": "titleLength"
 }

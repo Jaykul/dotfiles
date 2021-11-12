@@ -50,7 +50,7 @@ $DefaultModules = @(
     # @{ ModuleName="PSReadLine";       ModuleVersion="2.1.0" }
 
     @{ ModuleName = "DefaultParameter"; RequiredVersion = "2.0.0" }
-    @{ ModuleName = "ErrorView"; RequiredVersion = "0.0.2" }
+    # @{ ModuleName = "ErrorView"; RequiredVersion = "0.0.2" }
     @{ ModuleName = "zLocation"; ModuleVersion = "1.4.3" }
     # @{ ModuleName = "Profile"; ModuleVersion = "1.3.0" }
     {{ if eq .chezmoi.username "LD\\joelbennett" -}}
