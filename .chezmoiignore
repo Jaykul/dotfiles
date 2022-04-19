@@ -1,10 +1,11 @@
 README.md
 
-# Ignore 'OneDrive - *' unless it already exists
+# My "Documents" only really exist in one place. Ignore the ones that don't exist:
 {{ if not (stat (joinPath .chezmoi.homeDir "OneDrive - PoshCode")) }}
 OneDrive - PoshCode
 {{ else if not (stat (joinPath .chezmoi.homeDir "OneDrive - loanDepot")) }}
 OneDrive - loanDepot
 {{ else }}
+# If either of the others exist, ignore Documents even though it DOES exist
 Documents
 {{ end }}

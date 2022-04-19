@@ -17,7 +17,8 @@ $Now = [DateTime]::Now
 Set-Alias Update-PSModulePath $PSScriptRoot\Update-PSModulePath.ps1
 $PSModulePathFile = [IO.Path]::ChangeExtension($Profile.CurrentUserCurrentHost, ".PSModulePath.env")
 # But if it's been more than a day, we'll run it now, just to be sure
-if (24 -lt ($Now - (Get-Item $PSModulePathFile).LastWriteTime).TotalHours) {
+$Before = (Get-Item $PSModulePathFile -ErrorAction Ignore).LastWriteTime
+if (-not $Before -or 24 -lt ($Now - $Before).TotalHours) {
     Update-PSModulePath $PSModulePathFile
 } else {
     $Env:PSModulePath = @(Get-Content $PSModulePathFile) -join ([IO.Path]::PathSeparator)
