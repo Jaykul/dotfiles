@@ -61,3 +61,16 @@
 	cmd = "code-insiders --wait --diff $LOCAL $REMOTE"
 [init]
 	defaultBranch = main
+
+{{ if eq .chezmoi.username "LD\\joelbennett" -}}
+[credential "https://tfs"]
+	provider = generic
+[credential "https://tfs.ld.corp.local"]
+	provider = generic
+{{- end }}
+
+[trailer "semver"]
+	ifexists = replace
+	command = pwsh -c \"\\$('major','breaking','minor','feature','patch','fix' -match '$ARG') ?? 'patch'\"
+[advice]
+	skippedCherryPicks = false
