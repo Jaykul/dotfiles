@@ -93,7 +93,7 @@ $PSModulePath = @([IO.Path]::Combine($ProfileDir, "Modules")) +
 # Guarantee my ~\Projects\Modules are there so I can load my dev projects
 @("$Home\Projects\Modules") +
 # To ensure canonical path case, wildcard every path separator and then convert-path
-@() | Select-UniquePath -AsArray | Tee-Object -Path $PSModulePathFile
+@() | Select-UniquePath -AsArray | Tee-Object -FilePath $PSModulePathFile
 
 # I want to make sure that THIS version's Scripts (and then other versions) path is in the PATH
 $Env:Path = @($Env:Path) + @([IO.Path]::Combine($ProfileDir, "Scripts")) +
