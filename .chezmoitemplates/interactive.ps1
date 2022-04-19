@@ -72,7 +72,7 @@ if (Test-Elevation) {
 
 $global:WeatherJob = Start-ThreadJob {
     while ($true) {
-        (Invoke-RestMethod "wttr.in?format=3").Trim() -replace "^.*:\s*| \+|[FC]$"
+        (Invoke-RestMethod "wttr.in/ROC?u&format=%c%t").TrimEnd('F')
         Start-Sleep 300
     }
 } -Name WeatherQuery
@@ -397,14 +397,10 @@ Set-PSReadLineKeyHandler -Key "Alt+j" {
 Set-PSReadLineOption -HistoryNoDuplicates:$false -MaximumHistoryCount 8kb
 
 # this nonsense is temporary, just because I'm using a pre-release PSReadLine and I love it...
-if ((Get-Module PSReadLine).Version -ge "2.2") {
-    if ($PSVersionTable.PSVersion -ge "7.1") {
-        Set-PSReadLineOption -PredictionSource HistoryAndPlugin -PredictionViewStyle ListView
-    } else {
-        Set-PSReadLineOption -PredictionSource History -PredictionViewStyle ListView
-    }
+if ($PSVersionTable.PSVersion -ge "7.1") {
+    Set-PSReadLineOption -PredictionSource HistoryAndPlugin -PredictionViewStyle ListView
 } else {
-    Set-PSReadLineOption -PredictionSource History
+    Set-PSReadLineOption -PredictionSource History -PredictionViewStyle ListView
 }
 Set-PSReadLineOption -ContinuationPrompt "$(Text '&ColorSeparator; ')"
 
