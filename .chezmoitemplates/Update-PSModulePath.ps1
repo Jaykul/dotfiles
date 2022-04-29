@@ -1,10 +1,15 @@
 [CmdletBinding()]
 param(
-    # Cache file for the calculated PSModulePath
-    $PSModulePathFile = [IO.Path]::ChangeExtension($Profile.CurrentUserCurrentHost, ".PSModulePath.env"),
+    # Cache file for the calculated PSModulePath (e.g. $Profile.PSModulePath.env)
+    $PSModulePathFile = [IO.Path]::ChangeExtension($Profile, ".PSModulePath.env"),
+
+    # Cache file for the calculated Path additions (e.g. $Profile.+Path.env)
+    $PathAdditionFile = [IO.Path]::ChangeExtension($Profile, ".+Path.env"),
+
     # Root for "this" version of PowerShell
     $ProfileDir = [IO.Path]::GetDirectoryName($Profile.CurrentUserAllHosts)
 )
+
 function Select-UniquePath {
     #
     #    .SYNOPSIS
@@ -12,6 +17,9 @@ function Select-UniquePath {
     #    .EXAMPLE
     #        $ENV:PATH = $ENV:PATH | Select-UniquePath
     #
+    #        Shows how to deduplicate
+    #    .EXAMPLE
+    #        $ENV:PSModulePath | Select-UniquePath -PathName ENV:PSModulePath -RemoveNonexistent
     [CmdletBinding()]
     param(
         # Paths to folders
@@ -20,32 +28,50 @@ function Select-UniquePath {
         [AllowEmptyString()]
         [string[]]$Path,
 
-        # If set, output the path(s) as an array of paths
-        # Otherwise output joined by -Delimiter
-        [switch]$AsArray,
+        # PowerShell Paths which will will be Set-Content with the array
+        [string[]]$OutPathNameAsArray,
+
+        # PowerShell Paths which will will be Set-Content with the $Delimiter joined string
+        [string[]]$OutPathName,
+
+        # Force passing through output even when ArrayContentPaths or JoinContentPaths are specified
+        [switch]$Passthru,
 
         # The Path value is split by the delimiter. Defaults to '[IO.Path]::PathSeparator' so you can use this on $Env:Path
         [Parameter(Mandatory = $False)]
         [AllowNull()]
         [string]$Delimiter = [IO.Path]::PathSeparator,
 
-        # Determine whether the provider is case insensitive
-        [switch]$CaseInsensitive = $($false -notin (Test-Path $ProfileDir.ToLowerInvariant(), $ProfileDir.ToUpperInvariant()))
+        # Root for "this" version of PowerShell (calculated automatically)
+        $ProfileDir = [IO.Path]::GetDirectoryName($Profile),
+
+        # Determine whether the provider is case insensitive (calculated automatically)
+        [switch]$CaseInsensitive = $($false -notin (Test-Path $ProfileDir.ToLowerInvariant(), $ProfileDir.ToUpperInvariant())),
+
+        [switch]$RemoveNonExistent
     )
     begin {
-        # Write-Information "Select-UniquePath $Delimiter $Path" -Tags "Trace", "Enter"
+        #Write-Information"Select-UniquePath $fg:red$Delimiter$fg:clear $Path" -Tags "Trace", "Enter"
         # [string[]]$oldFolders = @()
         [System.Collections.Generic.List[string]]$Output = @()
     }
     process {
+        #Write-Information"Select-UniquePath $fg:cyan$Path$fg:clear" -Tags "Trace", "Enter"
         # Split and trim trailing slashes to normalize, and drop empty strings
-        $Output.AddRange([string[]]($Path.Split($Delimiter).TrimEnd('\/') -gt ""))
+        $Output.AddRange([string[]]($Path.Split($Delimiter).TrimEnd('\/').Where{$_ -gt ""}))
     }
     end {
         # Correct the case of all paths in PATH, even on Windows.
-        $Path = if ($CaseInsensitive) {
-            # Using wildcards on every folder forces Windows to calculate the ACTUAL case of the path
-            $Output -replace '(?<!:|\\|/|\*)(\\|/|$)', '*$1' |
+        $Path =
+        if ($CaseInsensitive -or $RemoveNonExistent) {
+            @(
+                if ($CaseInsensitive) {
+                    # Using wildcards on every folder forces Windows to calculate the ACTUAL case of the path
+                    $Output -replace '(?<!:|\\|/|\*)(\\|/|$)', '*$1'
+                } else {
+                    $Output
+                }
+            ) |
                 # Because Convert-Path will not resolve hidden folders, like C:\ProgramData*\ ...
                 # Use Get-Item -Force to ensure we don't loose hidden folders
                 Get-Item -Force |
@@ -56,13 +82,21 @@ function Select-UniquePath {
             $Output
         }
 
-        if ((-not $AsArray) -and $Delimiter) {
-            # This is just faster than Select-Object -Unique
-            [System.Linq.Enumerable]::Distinct($Path, [StringComparer]::OrdinalIgnoreCase) -join $Delimiter
-        } else {
-            [System.Linq.Enumerable]::Distinct($Path, [StringComparer]::OrdinalIgnoreCase)
+        [string[]]$Result = [System.Linq.Enumerable]::Distinct($Path, [StringComparer]::OrdinalIgnoreCase)
+
+        if ($OutPathNameAsArray) {
+            #Write-Information"Set-Content $fg:green$OutPathNameAsArray${fg:clear}:`n$($Result -join "`n")" -Tags "Trace"
+            Set-Content -Path $OutPathNameAsArray -Value $Result
         }
-        # Write-Information "Select-UniquePath $Delimiter $Path" -Tags "Trace", "Exit"
+        if ($OutPathName) {
+            #Write-Information"Set-Content $fg:green$OutPathName${fg:clear}: $Result" -Tags "Trace"
+            Set-Content -Path $OutPathName -Value ($Result -join $Delimiter)
+        }
+        if ($Passthru -or -not ($OutPathNameAsArray -or $OutPathName)) {
+            #Write-Information"${fg:Green}Passthru:$fg:clear $Result" -Tags "Trace"
+            $Result
+        }
+        #Write-Information"Select-UniquePath $fg:red$Delimiter$fg:clear $($Result -join "$fg:red$Delimiter$fg:clear")" -Tags "Trace", "Exit"
     }
 }
 
@@ -76,7 +110,7 @@ function Select-UniquePath {
 # 4. I don't worry about x86 because I never use it.
 # 5. I don't worry about linux because I add paths based on `$PSScriptRoot`, `$Profile` and `$PSHome`
 # The normal first location in PSModulePath is the "Modules" folder next to the real profile:
-$PSModulePath = @([IO.Path]::Combine($ProfileDir, "Modules")) +
+@([IO.Path]::Combine($ProfileDir, "Modules")) +
 # After that, I guess we'll keep whatever is in the environment variable
 @($Env:PSModulePath) +
 # PSHome is where powershell.exe or pwsh.exe lives ... it should already be in the Env:PSModulePath, but just in case:
@@ -93,9 +127,12 @@ $PSModulePath = @([IO.Path]::Combine($ProfileDir, "Modules")) +
 # Guarantee my ~\Projects\Modules are there so I can load my dev projects
 @("$Home\Projects\Modules") +
 # To ensure canonical path case, wildcard every path separator and then convert-path
-@() | Select-UniquePath -AsArray | Tee-Object -FilePath $PSModulePathFile
+@() | Select-UniquePath -OutPathName PSModulePath -OutPathNameAsArray $PSModulePathFile
 
 # I want to make sure that THIS version's Scripts (and then other versions) path is in the PATH
-$Env:Path = @($Env:Path) + @([IO.Path]::Combine($ProfileDir, "Scripts")) +
-@(Get-ChildItem ([IO.Path]::Combine([IO.Path]::GetDirectoryName($ProfileDir), "*PowerShell\*")) -Filter Scripts -Directory).FullName +
-@() | Select-UniquePath
+$PathAdditions = [Linq.Enumerable]::Distinct([string[]]@(
+    @([IO.Path]::Combine($ProfileDir, "Scripts")) +
+    @(Get-ChildItem ([IO.Path]::Combine([IO.Path]::GetDirectoryName($ProfileDir), "*PowerShell\*")) -Filter Scripts -Directory).FullName
+    )) | Tee-Object -FilePath $PathAdditionFile
+
+@($Env:Path) + @($PathAdditions) | Select-UniquePath -RemoveNonExistent -OutPathName Env:Path
