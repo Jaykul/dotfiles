@@ -20,6 +20,14 @@ if ($xlr8r::AddReplace) {
     })
 }
 
+# Write-Information "Checking PSModulePath.env"
+# Once a week I want to update the PSModulePath, just in case
+$Before = (Get-Item ($PSModulePathPath = [IO.Path]::ChangeExtension($Profile, ".PSModulePath.env")) -ErrorAction Ignore).LastWriteTime
+if (-not $Before -or (24 * 7) -lt ([DateTime]::Now - $Before).TotalHours) {
+    Update-PSModulePath $PSModulePathFile -ProfileDir $ProfileDir
+}
+
+# Write-Information "Setting Location."
 # For default elevated sessions, set the start location where it should be
 if ($pwd.Path -eq "$Env:SystemRoot\System32") {
     {{ if eq .chezmoi.username "LD\\joelbennett" -}}
@@ -29,6 +37,7 @@ if ($pwd.Path -eq "$Env:SystemRoot\System32") {
     {{- end }}
 }
 
+# Write-Information "Importing Default Modules."
 # Note these are dependencies of the Profile module, but it's faster to load them explicitly up front
 $DefaultModules = @(
     @{ ModuleName = "Microsoft.PowerShell.Management"; ModuleVersion = "3.1.0" }
@@ -50,7 +59,7 @@ $DefaultModules = @(
 
     @{ ModuleName = "Environment"; RequiredVersion = "1.1.0" }
     @{ ModuleName = "posh-git"; ModuleVersion = "1.0.0" }
-    @{ ModuleName = "PowerLine"; ModuleVersion = "3.3.0" }
+    @{ ModuleName = "PowerLine"; ModuleVersion = "3.4.1" }
     # @{ ModuleName="PSReadLine";       ModuleVersion="2.1.0" }
 
     @{ ModuleName = "DefaultParameter"; RequiredVersion = "2.0.0" }
@@ -66,6 +75,7 @@ $DefaultModules = @(
 
 Import-Module -FullyQualifiedName $DefaultModules -Scope Global
 
+# Write-Information "Importing Theme."
 if (Test-Elevation) {
     Import-Theme Lightly -IncludeModule Theme.PowerShell, Theme.PSReadLine, Theme.Terminal, PowerLine
 } elseif ($PSVersionTable.PSVersion.Major -le 5) {
@@ -78,7 +88,7 @@ if (Test-Elevation) {
 $PSStyle.OutputRendering = 'ansi'
 [PoshCode.Pansies.RgbColor]::ColorMode = 'Rgb24Bit'
 
-
+# Write-Information "Start weather job."
 $global:WeatherJob = Start-ThreadJob {
     while ($true) {
         (Invoke-RestMethod "wttr.in/ROC?u&format=%c%t").TrimEnd('F')
@@ -93,9 +103,13 @@ $global:GitPromptSettings.PathStatusSeparator = ''
 $global:GitPromptSettings.BeforeStash.Text = "$(Text '&ReverseSeparator;')"
 $global:GitPromptSettings.AfterStash.Text = "$(Text '&Separator;')"
 
-# Now that we've imported PowerLine, we can call the NEW prompt function:
+
+# Write-Information "Write PowerLine Prompt"
+# Now that we've imported PowerLine and configured Posh-Git we can call the NEW prompt function:
 Write-PowerlinePrompt
 
+
+# Write-Information "Configure PSReadLine KeyHandlers"
 # This would be SO MUCH FASTER if PSReadLine had a config file instead of me calling this cmdlet 15 or 20 times
 Set-PSReadLineKeyHandler Ctrl+Alt+c CaptureScreen
 Set-PSReadLineKeyHandler Ctrl+Shift+r ForwardSearchHistory
@@ -402,6 +416,7 @@ Set-PSReadLineKeyHandler -Key "Alt+j" {
 
 Set-PSReadLineOption -HistoryNoDuplicates:$false -MaximumHistoryCount 8kb
 
+
 # this nonsense is temporary, just because I'm using a pre-release PSReadLine and I love it...
 if ($PSVersionTable.PSVersion -ge "7.1") {
     Set-PSReadLineOption -PredictionSource HistoryAndPlugin -PredictionViewStyle ListView
@@ -411,6 +426,8 @@ if ($PSVersionTable.PSVersion -ge "7.1") {
 Set-PSReadLineOption -ContinuationPrompt "$(Text '&ColorSeparator; ')"
 
 {{- if eq .chezmoi.username "LD\\joelbennett" -}}
+# Write-Information "Detected LoanDepot"
+
 # Gives you tab completion on -Component, -Environment, -Datacenter, -ComputerName, -Role parameters on all commands in the below modules.
 # Beware the more modules you add to this list, the longer you powershell profile will take to set up.
 Update-LDArgumentCompleter -ModuleName "LDXGet", "LDXSet", "LDNetworking", "LDF5", "LDServerManagement"
@@ -418,6 +435,8 @@ Update-LDArgumentCompleter -ModuleName "LDXGet", "LDXSet", "LDNetworking", "LDF5
 # You must regularly Update-LDModule...
 # But not from inside VS Code, because when I open VS Code, I'm usually opening 3-6 at a time
 if ($ENV:TERM_PROGRAM -ne "vscode") {
+    # Write-Information "Detected not VS Code"
+
     $Now = Get-Date
     $LDUtilityManifest = Get-Module -List LDUtility | Get-Item | Select-Object -First 1
     $Age = ($Now - $LDUtilityManifest.LastWriteTime).TotalHours
@@ -462,6 +481,7 @@ $PSDefaultParameterValues["*:DeuteriumPath"] = "$deut"
 # Note that wildcard means this globally affects ANY parameter to ANY script or cmdlet where the parameter is named "DeuteriumPath"
 
 if ($host.Name -eq "Visual Studio Code Host") {
+    # Write-Information "Detected VS Code"
     # This module and command are only useable in the "PowerShell Integrated Console" in VS Code
     Import-Module EditorServicesCommandSuite
     Import-EditorCommand -Module EditorServicesCommandSuite

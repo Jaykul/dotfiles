@@ -1,24 +1,17 @@
 trap { Write-Warning ($_.ScriptStackTrace | Out-String) }
-# Calculate a couple of
-$ProfileDir = [IO.Path]::GetDirectoryName($Profile)
-$PSModulePathFile = [IO.Path]::ChangeExtension($Profile, ".PSModulePath.env")
+# $InformationPreference = "Continue"
+# I wish $Profile was in $Home, but since it's not:
+$ProfileDir = $PSScriptRoot
 
-# You can run `Update-PSModulePath` any time.
-Set-Alias Update-PSModulePath $PSScriptRoot\Update-PSModulePath.ps1
-
-# But if it's been more than a week, we'll run it now, just to be sure
-$Before = (Get-Item $PSModulePathFile -ErrorAction Ignore).LastWriteTime
-if (-not $Before -or (24 * 7) -lt ([DateTime]::Now - $Before).TotalHours) {
-    Update-PSModulePath $PSModulePathFile -ProfileDir $ProfileDir
-} else {
-    $Env:PSModulePath = @(Get-Content $PSModulePathFile) -join [IO.Path]::PathSeparator
-
-    $Env:Path += @('') + [Linq.Enumerable]::Distinct([string[]]@(
-        @([IO.Path]::Combine($ProfileDir, "Scripts")) +
-        @(Get-ChildItem ([IO.Path]::Combine([IO.Path]::GetDirectoryName($ProfileDir), "*PowerShell\*")) -Filter Scripts -Directory).FullName
-    )) -join [IO.Path]::PathSeparator
+# I can run `Update-PSModulePath` any time, but I don't by default
+Set-Alias Update-PSModulePath $ProfileDir\Update-PSModulePath.ps1
+# I just read the cached values from the last run
+if (Test-Path ($PSModulePathPath = [IO.Path]::ChangeExtension($Profile, ".PSModulePath.env"))) {
+    $Env:PSModulePath = @(Get-Content $PSModulePathPath) -join [IO.Path]::PathSeparator
 }
-
+if (Test-Path ($PathPath = [IO.Path]::ChangeExtension($Profile, ".Path.env"))) {
+    $Env:Path = @(Get-Content $PathPath) -join [IO.Path]::PathSeparator
+}
 
 {{ if eq .chezmoi.username "LD\\joelbennett" -}}
 # Shortcuts for paths that you will use a lot.
@@ -32,4 +25,7 @@ $chamber = "$deut\chamber"
 
 # PART 3. Things we only need in interactive sessions
 #   For performance reasons, I don't want to do all of this work when I'm running automated scripts
-function prompt { & "$ProfileDir\interactive.ps1" }
+function prompt {
+    & "$ProfileDir\interactive.ps1"
+    # $InformationPreference = "SilentlyContinue"
+}
