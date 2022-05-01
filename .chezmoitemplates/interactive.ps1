@@ -1,3 +1,7 @@
+# We need to force encoding to UTF8 for PSReadLine to do the right thing with extended characters
+# But we need to make sure it's UTF8-NoBOM
+[Console]::OutputEncoding = [Console]::InputEncoding = $OutputEncoding = [System.Text.UTF8Encoding]::new()
+
 # Just a handful of additional TypeAccelerators
 $xlr8r = [psobject].assembly.gettype("System.Management.Automation.TypeAccelerators")
 $Accelerate = @{
@@ -70,6 +74,11 @@ if (Test-Elevation) {
     Import-Theme Darkly -IncludeModule Theme.PowerShell, Theme.PSReadLine, Theme.Terminal, PowerLine
 }
 
+# Make sure PSStyle doesn't mess with our color!
+$PSStyle.OutputRendering = 'ansi'
+[PoshCode.Pansies.RgbColor]::ColorMode = 'Rgb24Bit'
+
+
 $global:WeatherJob = Start-ThreadJob {
     while ($true) {
         (Invoke-RestMethod "wttr.in/ROC?u&format=%c%t").TrimEnd('F')
@@ -105,7 +114,6 @@ Set-PSReadLineKeyHandler Ctrl+I Yank
 Set-PSReadLineKeyHandler Ctrl+h BackwardDeleteWord
 Set-PSReadLineKeyHandler Ctrl+Enter AddLine
 Set-PSReadLineKeyHandler Ctrl+Shift+Enter AcceptAndGetNext
-
 
 Set-PSReadLineKeyHandler -Key Alt+w {
     param($key, $arg)
@@ -154,7 +162,6 @@ Set-PSReadLineKeyHandler '(', '{', '[', '"', "'" {
         [ReadLine]::SetCursorPosition($cursor + 1)
     }
 } -Description "Insert matching braces and quotes"
-
 
 Set-PSReadLineKeyHandler ')', ']', '}', '"', "'" {
     param($key, $arg)
@@ -345,7 +352,6 @@ Set-PSReadLineKeyHandler -Key "Alt+k" {
     [ReadLine]::SetMark($null, $null)
     [ReadLine]::SelectForwardChar($null, ($nextAst.Extent.EndOffset - $nextAst.Extent.StartOffset) - $endOffsetAdjustment)
 } -Description "Select next argument in the command line (or use a digit to select by index)"
-
 
 Set-PSReadLineKeyHandler -Key "Alt+j" {
     param($key)
