@@ -1,4 +1,5 @@
 {
+    "$help": "https://aka.ms/terminal-documentation",
     "$schema": "https://aka.ms/terminal-profiles-schema",
     "actions": [
         { "keys": "ctrl+f",          "command": "find" },
@@ -38,68 +39,67 @@
             },
             "opacity": 70,
             "padding": "0, 0, 0, 0",
-            "unfocusedAppearance": {
-                "experimental.retroTerminalEffect": true
-            },
             "useAcrylic": true
         },
         "list": [
             {
                 "name": "Windows PowerShell",
                 "guid": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
-                "backgroundImage": "ms-appdata:///roaming/Powershell_blue256.png",
-                "commandline": "powershell.exe",
-                "hidden": false,
-                "icon": "ms-appdata:///roaming/PowerShell_blue.png"
+                "backgroundImage": "ms-appdata:///local/Powershell_blue256.png",
+                "icon": "ms-appdata:///local/PowerShell_blue.png",
+                "hidden": false
             },
             {
                 "name": "PowerShell -NoProfile",
                 "guid": "{54659ce2-8d1f-40dd-b671-533b9d1635bc}",
-                "backgroundImage": "ms-appdata:///roaming/Powershell_blue256.png",
+                "backgroundImage": "ms-appdata:///local/Powershell_blue256.png",
+                "icon": "ms-appdata:///local/PowerShell_blue.png",
                 "commandline": "powershell.exe -NoProfile",
-                "icon": "ms-appdata:///roaming/PowerShell_blue.png"
+                "startingDirectory": "%USERPROFILE%"
             },
             {
                 "name": "PS7 Preview",
+                "source": "Windows.Terminal.PowershellCore",
                 "guid": "{a3a2e83a-884a-5379-baa8-16f193a13b21}",
-                "hidden": false,
+                "backgroundImage": "ms-appdata:///local/Powershell_av256.png",
                 "icon": "ms-appx:///ProfileIcons/pwsh-preview.png",
-                "source": "Windows.Terminal.PowershellCore"
+                "hidden": false
             },
             {
                 "name": "PS7 Preview -NoProfile",
-                "commandline": "C:\\Program Files\\PowerShell\\7-preview\\pwsh.exe -NoProfile",
+                "commandline": "pwsh.exe -NoProfile",
                 "guid": "{8340ed4a-61a8-4ea0-b524-c33fa2e861e2}",
+                "backgroundImage": "ms-appdata:///local/Powershell_av256.png",
                 "icon": "ms-appx:///ProfileIcons/pwsh-preview.png",
                 "startingDirectory": "%USERPROFILE%"
             },
             {
                 "name": "Command Prompt",
-                "commandline": "cmd.exe",
                 "guid": "{0caa0dad-35be-5f56-a8ff-afceeeaa6101}",
                 "hidden": false
             },
             {
                 "name": "Azure Cloud Shell",
-                "backgroundImage": "ms-appdata:///roaming/Cloud.png",
+                "source": "Windows.Terminal.Azure",
                 "guid": "{b453ae62-4e3d-5e58-b989-0a998ec441b8}",
-                "hidden": false,
-                "source": "Windows.Terminal.Azure"
+                "backgroundImage": "ms-appdata:///local/Cloud.png",
+                "hidden": false
             },
             {
                 "name": "PwSh",
-                "backgroundImage": "ms-appdata:///roaming/Powershell_black256.png",
+                "source": "Windows.Terminal.PowershellCore",
                 "guid": "{574e775e-4f2a-5b96-ac1e-a2962a402336}",
-                "hidden": false,
-                "icon": "ms-appdata:///roaming/PowerShell_black.ico",
-                "source": "Windows.Terminal.PowershellCore"
+                "backgroundImage": "ms-appdata:///local/Powershell_black256.png",
+                "icon": "ms-appx:///ProfileIcons/pwsh.png",
+                "hidden": false
             },
             {
                 "name": "PwSh -NoProfile",
-                "backgroundImage": "ms-appdata:///roaming/Powershell_black256.png",
                 "commandline": "pwsh.exe -NoProfile",
                 "guid": "{e48db962-18af-4eec-af6a-f77175ef3a71}",
-                "icon": "ms-appdata:///roaming/PowerShell_black.ico",
+                "backgroundImage": "ms-appdata:///local/Powershell_black256.png",
+                "icon": "ms-appx:///ProfileIcons/pwsh.png",
+                "startingDirectory": "%USERPROFILE%"
             },
             {
                 "name": "PowerShell (dotnet global)",
@@ -108,18 +108,28 @@
                 "source": "Windows.Terminal.PowershellCore"
             },
             {
-                "name": "Ubuntu",
+                "name": "Ubuntu 20.04",
+                "source": "Windows.Terminal.Wsl",
                 "guid": "{07b52e3e-de2c-5db4-bd2d-ba144ed6c273}",
-                "hidden": false,
-                "source": "Windows.Terminal.Wsl"
+                "icon": "ms-appdata:///local/Ubuntu.png",
+                "backgroundImage": "ms-appdata:///local/Ubuntu_256.png",
+                "hidden": false
             },
             {{ if eq .chezmoi.username "ZEN\\Jaykul" -}}
             {
-                "name": "Matrix",
-                "guid": "{3fa75d59-8c42-4107-b958-58118f2c2f5c}",
+                "name": "Matrix (SSH)",
+                "tabTitle": "Matrix",
                 "commandline": "ssh azureuser@matrix.poshcode.org",
-                "icon": "C:\\Users\\Jaykul\\OneDrive - PoshCode\\Shared Pictures\\Art\\Logo\\Icons\\matrix.png",
-                "tabTitle": "Matrix"
+                "guid": "{3fa75d59-8c42-4107-b958-58118f2c2f5c}",
+                "icon": "ms-appdata:///local/matrix.png"
+            },
+            {
+                "name": "Minecraft (SSH)",
+                "commandline": "ssh huddledminers.eastus.cloudapp.azure.com",
+                "guid": "{9688bbef-7465-4a9a-a902-75b3f108b2c9}",
+                "icon": "ms-appdata:///local/Minecraft.ico",
+                "backgroundImage": "ms-appdata:///local/Minecraft_256.png",
+                "hidden": false
             }
             {{ end -}}
         ]
