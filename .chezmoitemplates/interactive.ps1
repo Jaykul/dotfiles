@@ -43,8 +43,9 @@ $DefaultModules = @(
     @{ ModuleName = "Microsoft.PowerShell.Management"; ModuleVersion = "3.1.0" }
     @{ ModuleName = "Microsoft.PowerShell.Security"; ModuleVersion = "3.0.0" }
     @{ ModuleName = "Microsoft.PowerShell.Utility"; ModuleVersion = "3.1.0" }
-    @{ ModuleName = "Configuration"; ModuleVersion = "1.4.0" }
-    @{ ModuleName = "Pansies"; ModuleVersion = "2.1.0" }
+    @{ ModuleName = "Metadata"; ModuleVersion = "1.5.3" }
+    @{ ModuleName = "Configuration"; ModuleVersion = "1.5.0" }
+    @{ ModuleName = "Pansies"; ModuleVersion = "2.4.0" }
 
     if ($Env:WT_SESSION) {
         @{ ModuleName = "EzTheme"; ModuleVersion = "0.0.1" }
