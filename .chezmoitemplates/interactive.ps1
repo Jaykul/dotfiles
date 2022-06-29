@@ -62,7 +62,8 @@ $DefaultModules = @(
 
     @{ ModuleName = "Environment"; RequiredVersion = "1.1.0" }
     @{ ModuleName = "posh-git"; ModuleVersion = "1.1.0" }
-    # @{ ModuleName="PSReadLine";       ModuleVersion="2.1.0" }
+    @{ ModuleName = "PowerLine"; ModuleVersion = "3.4.1" }
+    @{ ModuleName = "PSReadLine"; ModuleVersion="2.4.0" }
 
     @{ ModuleName = "DefaultParameter"; RequiredVersion = "2.0.0" }
     # @{ ModuleName = "ErrorView"; RequiredVersion = "0.0.2" }
@@ -86,8 +87,10 @@ if (([PoshCode.TerminalBlock]::Elevated) -and (Get-Theme "${Env:UserName}-Elevat
     Import-Theme "${Env:UserName}" -IncludeModule Theme.PowerShell, Theme.PSReadLine, Theme.Terminal, PowerLine
 }
 
-# Make sure PSStyle doesn't mess with our color!
-$PSStyle.OutputRendering = 'ansi'
+if ($PSStyle.OutputRendering) {
+    # Make sure PSStyle doesn't mess with our color!
+    $PSStyle.OutputRendering = 'ansi'
+}
 [PoshCode.Pansies.RgbColor]::ColorMode = 'Rgb24Bit'
 
 # Write-Information "Start weather job."
@@ -473,7 +476,7 @@ if ($ENV:TERM_PROGRAM -ne "vscode") {
     Get-ChildItem "$env:APPDATA\Microsoft\Internet Explorer\Quick Launch\User Pinned\Taskbar" |
         Where-Object { $_.BaseName -notin "KeePass 2", "File Explorer", "Microsoft Teams", "Visual Studio Code - Insiders", "Outlook" } |
         ForEach-Object {
-            Start-Process -FilePath $_.FullName -Verb "taskbarunpin"
+            Start-Process -FilePath $_.FullName -Verb "taskbarunpin" -ErrorAction SilentlyContinue
         }
 }
 # Make your life easier, set your deuterium path as a default
