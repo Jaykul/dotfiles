@@ -43,24 +43,25 @@ $DefaultModules = @(
     @{ ModuleName = "Microsoft.PowerShell.Management"; ModuleVersion = "3.1.0" }
     @{ ModuleName = "Microsoft.PowerShell.Security"; ModuleVersion = "3.0.0" }
     @{ ModuleName = "Microsoft.PowerShell.Utility"; ModuleVersion = "3.1.0" }
-    @{ ModuleName = "Metadata"; ModuleVersion = "1.5.3" }
-    @{ ModuleName = "Configuration"; ModuleVersion = "1.5.0" }
+    @{ ModuleName = "Metadata"; ModuleVersion = "1.5.4" }
+    @{ ModuleName = "Configuration"; ModuleVersion = "1.5.1" }
     @{ ModuleName = "Pansies"; ModuleVersion = "2.4.0" }
+    @{ ModuleName = "TerminalBlocks"; ModuleVersion = "1.0.0" }
+    @{ ModuleName = "PowerLine"; ModuleVersion = "4.0.0" }
 
     if ($Env:WT_SESSION) {
-        @{ ModuleName = "EzTheme"; ModuleVersion = "0.0.1" }
-        @{ ModuleName = "Theme.PowerShell"; ModuleVersion = "0.0.1" }
-        @{ ModuleName = "Theme.PSReadline"; ModuleVersion = "0.0.1" }
-        @{ ModuleName = "Theme.Terminal"; ModuleVersion = "0.0.1" }
+        @{ ModuleName = "EzTheme"; ModuleVersion = "0.1.0" }
+        @{ ModuleName = "Theme.PowerShell"; ModuleVersion = "0.1.0" }
+        @{ ModuleName = "Theme.PSReadline"; ModuleVersion = "0.1.0" }
+        @{ ModuleName = "Theme.WindowsTerminal"; ModuleVersion = "0.1.0" }
     } else {
-        @{ ModuleName = "EzTheme"; ModuleVersion = "0.0.1" }
-        @{ ModuleName = "Theme.PowerShell"; ModuleVersion = "0.0.1" }
-        @{ ModuleName = "Theme.PSReadline"; ModuleVersion = "0.0.1" }
+        @{ ModuleName = "EzTheme"; ModuleVersion = "0.1.1" }
+        @{ ModuleName = "Theme.PowerShell"; ModuleVersion = "0.1.0" }
+        @{ ModuleName = "Theme.PSReadline"; ModuleVersion = "0.1.0" }
     }
 
     @{ ModuleName = "Environment"; RequiredVersion = "1.1.0" }
-    @{ ModuleName = "posh-git"; ModuleVersion = "1.0.0" }
-    @{ ModuleName = "PowerLine"; ModuleVersion = "3.4.1" }
+    @{ ModuleName = "posh-git"; ModuleVersion = "1.1.0" }
     # @{ ModuleName="PSReadLine";       ModuleVersion="2.1.0" }
 
     @{ ModuleName = "DefaultParameter"; RequiredVersion = "2.0.0" }
@@ -77,12 +78,12 @@ $DefaultModules = @(
 Import-Module -FullyQualifiedName $DefaultModules -Scope Global
 
 # Write-Information "Importing Theme."
-if (Test-Elevation) {
-    Import-Theme Lightly -IncludeModule Theme.PowerShell, Theme.PSReadLine, Theme.Terminal, PowerLine
-} elseif ($PSVersionTable.PSVersion.Major -le 5) {
-    Import-Theme PS5
+if (([PoshCode.TerminalBlock]::Elevated) -and (Get-Theme "${Env:UserName}-Elevated")) {
+    Import-Theme "${Env:UserName}-Elevated" -IncludeModule Theme.PowerShell, Theme.PSReadLine, Theme.Terminal, PowerLine
+} elseif (($PSVersionTable.PSVersion.Major -le 7) -and (Get-Theme "${Env:UserName}-Legacy")) {
+    Import-Theme "${Env:UserName}-Legacy"
 } else {
-    Import-Theme Darkly -IncludeModule Theme.PowerShell, Theme.PSReadLine, Theme.Terminal, PowerLine
+    Import-Theme "${Env:UserName}" -IncludeModule Theme.PowerShell, Theme.PSReadLine, Theme.Terminal, PowerLine
 }
 
 # Make sure PSStyle doesn't mess with our color!
