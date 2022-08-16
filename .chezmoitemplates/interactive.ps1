@@ -113,7 +113,6 @@ $global:GitPromptSettings.AfterStash.Text = "$(Text '&Separator;')"
 # Now that we've imported PowerLine and configured Posh-Git we can call the NEW prompt function:
 Write-PowerlinePrompt
 
-
 # Write-Information "Configure PSReadLine KeyHandlers"
 # This would be SO MUCH FASTER if PSReadLine had a config file instead of me calling this cmdlet 15 or 20 times
 Set-PSReadLineKeyHandler Ctrl+Alt+c CaptureScreen

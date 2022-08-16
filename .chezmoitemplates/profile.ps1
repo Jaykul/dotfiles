@@ -23,6 +23,21 @@ $deut = "$ldx\Deuterium"
 $chamber = "$deut\chamber"
 {{ end -}}
 
+
+if ($Host.UI.RawUI.KeyAvailable) {
+    $Controlled = $false
+    while ($Host.UI.RawUI.KeyAvailable -and ($key = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown,IncludeKeyUp"))) {
+        if (!$Controlled -and $key.ControlKeyState -match "LeftCtrlPressed") {
+            $Controlled = $true
+        }
+    }
+    if ($Controlled) {
+        Write-Warning "CTRL: Skipping Interactive Config. To complete, run:`n. `$ProfileDir\interactive.ps1"
+        function prompt { "$([char]27)[36m$($MyInvocation.HistoryId)$([char]27)[37m $pwd$([char]27)[0m`n❯" }
+        return
+    }
+}
+
 # PART 3. Things we only need in interactive sessions
 #   For performance reasons, I don't want to do all of this work when I'm running automated scripts
 function prompt {
