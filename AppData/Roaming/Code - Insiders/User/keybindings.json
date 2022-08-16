@@ -125,5 +125,17 @@
         "key": "ctrl+k ctrl+o",
         "command": "-workbench.action.files.openLocalFolder",
         "when": "remoteFileDialogVisible"
+    },
+    {
+        "key": "ctrl+e",
+        "command": "-workbench.action.quickOpen"
+    },
+    {
+        "key": "ctrl+e",
+        "command": "quickgrep.action"
+    },
+    {
+        "key": "win+e",
+        "command": "-quickgrep.action"
     }
 ]
