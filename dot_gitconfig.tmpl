@@ -53,12 +53,12 @@
 [merge]
 	tool = vscode
 [mergetool "vscode"]
-	cmd = "code-insiders --wait $MERGED"
+	cmd = code-insiders --wait --merge $REMOTE $LOCAL $BASE $MERGED
 [diff]
 	tool = vscode
 	colorMoved = default
 [difftool "vscode"]
-	cmd = "code-insiders --wait --diff $LOCAL $REMOTE"
+	cmd = code-insiders --wait --diff $REMOTE $LOCAL
 [init]
 	defaultBranch = main
 
