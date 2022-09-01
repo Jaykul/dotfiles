@@ -122,7 +122,15 @@ function Select-UniquePath {
 # The normal first location in PSModulePath is the "Modules" folder next to the real profile:
 @([IO.Path]::Combine($ProfileDir, "Modules")) +
 # After that, I guess we'll keep whatever is in the environment variable
-@($Env:PSModulePath) +
+@(
+    # Don't use $ENV:PSModulePath, because I overwrite it in my profile with cached output from this
+    if ($Env:PSModulePath_Before) {
+        $Env:PSModulePath_Before
+    } else {
+        [System.Environment]::GetEnvironmentVariable("PSMODULEPATH", "Machine") + ';' +
+        [System.Environment]::GetEnvironmentVariable("PSMODULEPATH", "User")
+    }
+) +
 # PSHome is where powershell.exe or pwsh.exe lives ... it should already be in the Env:PSModulePath, but just in case:
 @([IO.Path]::Combine($PSHome, "Modules")) +
 # FINALLY, add the Module paths for other PowerShell versions, because I'm an optimist
@@ -141,7 +149,17 @@ function Select-UniquePath {
 Select-UniquePath -OutPathName Env:PSModulePath -OutPathNameAsArray $PSModulePathFile -CaseInsensitive:$CaseInsensitive -RemoveNonExistent
 
 # I want to make sure that THIS version's Scripts (and then other versions) path is in the PATH
-@($Env:Path) +
+# But don't use $ENV:PATH here because I wiped it's original contents with previously cached output from here
+@($PSHOME) +
+@(
+    # Don't use $ENV:PATH, because I overwrite it in my profile with cached output from this
+    if ($Env:PATH_Before) {
+        $Env:PATH_Before
+    } else {
+        [System.Environment]::GetEnvironmentVariable("PATH", "Machine") + ';' +
+        [System.Environment]::GetEnvironmentVariable("PATH", "User")
+    }
+) +
 @([IO.Path]::Combine($ProfileDir, "Scripts")) +
 @(Get-ChildItem ([IO.Path]::Combine([IO.Path]::GetDirectoryName($ProfileDir), "*PowerShell\*")) -Filter Scripts -Directory).FullName +
 # Avoid duplicates and ensure canonical path case
