@@ -113,17 +113,21 @@ function Select-UniquePath {
 # NOTES:
 # 1. The main concern is to keep things in order:
 #     a. User path ($Home) before machine path ($PSHome)
-#     b. Existing PSModulePath before other versions
-#     c. current version before other versions
+#     b. current version before other versions
+#     c. Existing PSModulePath before other versions
 # 2. I don't worry about duplicates because `Select-UniquePath` takes care of it
 # 3. I don't worry about missing paths, because `Select-UniquePath` takes care of it
 # 4. I don't worry about x86 because I never use it.
 # 5. I don't worry about linux because I add paths based on `$PSScriptRoot`, `$Profile` and `$PSHome`
-# The normal first location in PSModulePath is the "Modules" folder next to the real profile:
+
+# The first path in PSModulePath needs to be the "Modules" folder which is next to your $profile:
 @([IO.Path]::Combine($ProfileDir, "Modules")) +
-# After that, I guess we'll keep whatever is in the environment variable
+# We need to make sure this version's PSHome comes before any other version
+# To guarantee that, we put it here in second place (before the current PSModulePath value)...
+@([IO.Path]::Combine($PSHome, "Modules")) +
+# Then we can use whatever was in the PSModulePath environment variable
 @(
-    # Don't use $ENV:PSModulePath, because I overwrite it in my profile with cached output from this
+    # But I don't just use $ENV:PSModulePath, because I overwrite it in my profile with cached output from this!
     if ($Env:PSModulePath_Before) {
         $Env:PSModulePath_Before
     } else {
@@ -131,10 +135,8 @@ function Select-UniquePath {
         [System.Environment]::GetEnvironmentVariable("PSMODULEPATH", "User")
     }
 ) +
-# PSHome is where powershell.exe or pwsh.exe lives ... it should already be in the Env:PSModulePath, but just in case:
-@([IO.Path]::Combine($PSHome, "Modules")) +
-# FINALLY, add the Module paths for other PowerShell versions, because I'm an optimist
-@(Get-ChildItem ([IO.Path]::Combine([IO.Path]::GetDirectoryName([IO.Path]::GetDirectoryName($PSHome)), "*PowerShell")) -Filter Modules -Recurse -Depth 2).FullName +
+# Just to make sure we don't miss anything
+# Add the Module paths for other PowerShell versions down here
 @(Convert-Path @(
         [IO.Path]::Combine([IO.Path]::GetDirectoryName($ProfileDir), "*PowerShell\Modules")
         # These may be duplicate or not exist, but it doesn't matter
@@ -142,7 +144,8 @@ function Select-UniquePath {
         "$Env:ProgramFiles\*PowerShell\*\Modules"
         "$Env:SystemRoot\System32\*PowerShell\*\Modules"
     )) +
-# Guarantee my ~\Projects\Modules are there so I can load my dev projects
+@(Get-ChildItem ([IO.Path]::Combine([IO.Path]::GetDirectoryName([IO.Path]::GetDirectoryName($PSHome)), "*PowerShell")) -Filter Modules -Recurse -Depth 2).FullName +
+# Put my ~\Projects\Modules on the end, so I can load my dev builds by version number when I want to
 @("$Home\Projects\Modules") +
 # Avoid duplicates and ensure canonical path case
 @() |

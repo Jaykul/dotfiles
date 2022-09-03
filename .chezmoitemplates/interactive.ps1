@@ -43,9 +43,9 @@ $DefaultModules = @(
     @{ ModuleName = "Microsoft.PowerShell.Management"; ModuleVersion = "3.1.0" }
     @{ ModuleName = "Microsoft.PowerShell.Security"; ModuleVersion = "3.0.0" }
     @{ ModuleName = "Microsoft.PowerShell.Utility"; ModuleVersion = "3.1.0" }
-    @{ ModuleName = "Metadata"; ModuleVersion = "1.5.4" }
+    @{ ModuleName = "Metadata"; ModuleVersion = "1.5.7" }
     @{ ModuleName = "Configuration"; ModuleVersion = "1.5.1" }
-    @{ ModuleName = "Pansies"; ModuleVersion = "2.4.0" }
+    @{ ModuleName = "Pansies"; ModuleVersion = "2.6.0" }
     @{ ModuleName = "TerminalBlocks"; ModuleVersion = "1.0.0" }
     @{ ModuleName = "PowerLine"; ModuleVersion = "4.0.0" }
 
