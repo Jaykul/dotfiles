@@ -1,4 +1,4 @@
-trap { Write-Warning ($_.ScriptStackTrace | Out-String) }
+﻿trap { Write-Warning ($_.ScriptStackTrace | Out-String) }
 # $InformationPreference = "Continue"
 # I wish $Profile was in $Home, but since it's not:
 $ProfileDir = $PSScriptRoot

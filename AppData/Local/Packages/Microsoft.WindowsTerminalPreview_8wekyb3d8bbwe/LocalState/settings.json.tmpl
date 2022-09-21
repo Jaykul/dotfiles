@@ -2,38 +2,57 @@
     "$help": "https://aka.ms/terminal-documentation",
     "$schema": "https://aka.ms/terminal-profiles-schema",
     "actions": [
-        { "keys": "ctrl+f",          "command": "find" },
-        { "keys": "ctrl+n",          "command": "openNewTabDropdown" },
-        { "keys": "ctrl+shift+v",    "command": "paste" },
-        { "keys": "ctrl+c",          "command": { "action": "copy", "singleLine": false } },
-        { "keys": "ctrl+shift+plus", "command": { "action": "newTab" } },
-        { "keys": "alt+shift+d",     "command": { "action": "splitPane", "split": "auto", "splitMode": "duplicate" } },
-        { "keys": "alt+w",           "command": { "action": "splitPane", "profile": "Windows PowerShell", "split": "auto" } },
-        { "keys": "alt+shift+w",     "command": { "action": "newTab", "profile": "Windows PowerShell" } },
-        { "keys": "alt+p",           "command": { "action": "splitPane", "profile": "PwSh", "split": "auto" } },
-        { "keys": "alt+shift+p",     "command": { "action": "newTab", "profile": "PwSh" } },
-        { "keys": "alt+u",           "command": { "action": "splitPane", "profile": "Ubuntu", "split": "auto" } },
-        { "keys": "alt+shift+u",     "command": { "action": "newTab", "profile": "Ubuntu" } },
-        { "keys": "ctrl+1",          "command": { "action": "switchToTab", "index": 0 } },
-        { "keys": "ctrl+2",          "command": { "action": "switchToTab", "index": 1 } },
-        { "keys": "ctrl+3",          "command": { "action": "switchToTab", "index": 2 } },
-        { "keys": "ctrl+4",          "command": { "action": "switchToTab", "index": 3 } },
-        { "keys": "ctrl+5",          "command": { "action": "switchToTab", "index": 4 } },
-        { "keys": "ctrl+6",          "command": { "action": "switchToTab", "index": 5 } },
-        { "keys": "ctrl+7",          "command": { "action": "switchToTab", "index": 6 } },
-        { "keys": "ctrl+8",          "command": { "action": "switchToTab", "index": 7 } },
-        { "keys": "ctrl+9",          "command": { "action": "switchToTab", "index": 8 } }
+        { "keys": "ctrl+f",         "command": "find" },
+        { "keys": "ctrl+n",         "command": "openNewTabDropdown" },
+        { "keys": "ctrl+shift+plus","command": { "action": "newTab" } },
+        { "keys": "ctrl+c",         "command": { "action": "copy", "singleLine": false } },
+        { "keys": "ctrl+shift+v",   "command": "paste" },
+        { "keys": "alt+shift+d",    "command": { "action": "splitPane", "split": "auto", "splitMode": "duplicate" } },
+        { "keys": "alt+w",          "command": { "action": "splitPane", "profile": "Windows PowerShell", "split": "auto" } },
+        { "keys": "alt+shift+w",    "command": { "action": "newTab", "profile": "Windows PowerShell" } },
+        { "keys": "alt+p",          "command": { "action": "splitPane", "profile": "PwSh", "split": "auto" } },
+        { "keys": "alt+shift+p",    "command": { "action": "newTab", "profile": "PwSh" } },
+        { "keys": "alt+u",          "command": { "action": "splitPane", "profile": "Ubuntu", "split": "auto" } },
+        { "keys": "alt+shift+u",    "command": { "action": "newTab", "profile": "Ubuntu" } },
+        { "keys": "ctrl+1",         "command": { "action": "switchToTab", "index": 0 } },
+        { "keys": "ctrl+2",         "command": { "action": "switchToTab", "index": 1 } },
+        { "keys": "ctrl+3",         "command": { "action": "switchToTab", "index": 2 } },
+        { "keys": "ctrl+4",         "command": { "action": "switchToTab", "index": 3 } },
+        { "keys": "ctrl+5",         "command": { "action": "switchToTab", "index": 4 } },
+        { "keys": "ctrl+6",         "command": { "action": "switchToTab", "index": 5 } },
+        { "keys": "ctrl+7",         "command": { "action": "switchToTab", "index": 6 } },
+        { "keys": "ctrl+8",         "command": { "action": "switchToTab", "index": 7 } },
+        { "keys": "ctrl+9",         "command": { "action": "switchToTab", "index": 8 } },
+        { "keys": "pgup",           "command": "scrollUpPage" },
+        { "keys": "pgdn",           "command": "scrollDownPage" },
+        { "keys": "ctrl+pgup",      "command": { "action": "scrollToMark", "direction": "first" }, "name": "First mark" },
+        { "keys": "ctrl+pgdn",      "command": { "action": "scrollToMark", "direction": "last" }, "name": "Last mark" },
+        { "keys": "ctrl+shift+pgup","command": "unbound" },
+        { "keys": "ctrl+shift+pgdn","command": "unbound" },
+        { "keys": "ctrl+end",       "command": "scrollToBottom" },
+        { "keys": "ctrl+shift+end", "command": "unbound" },
+        { "keys": "ctrl+shift+f13", "command": "toggleBlockSelection", "name": "Toggle Selection" },
+        { "keys": "f13",            "command": { "action": "markMode" }, "name": "Toggle Mark Mode" },
+        {                           "command": { "action": "addMark", "color": "#FF00FF" }, "name": "Mark Pink" },
+        { "keys": "ctrl+shift+up",  "command": { "action": "scrollToMark", "direction": "previous" }, "name": "Previous mark" },
+        {                           "command": { "action": "addMark" }, "name": "Mark" },
+        { "keys": "ctrl+shift+down","command": { "action": "scrollToMark", "direction": "next" }, "name": "Next mark" },
+        {                           "command": { "action": "addMark", "color": "#0000FF" }, "name": "Mark Blue" },
+        {                           "command": { "action": "clearAllMarks" }, "name": "Clear Marks" }
     ],
     "copyFormatting": "all",
     "copyOnSelect": false,
     "defaultProfile": "{{ if eq .shell "PowerShell"}}{574e775e-4f2a-5b96-ac1e-a2962a402336}{{else}}{61c54bbd-c2c6-5271-96e7-009a87ff44bf}{{end}}",
     "profiles": {
         "defaults": {
+            "backgroundImage": "ms-appdata:///local/photo-1651870364199-fc5f9f46ac85.avif",
             "backgroundImageAlignment": "bottomRight",
             "backgroundImageOpacity": 0.5,
-            "backgroundImageStretchMode": "none",
+            "backgroundImageStretchMode": "uniformToFill",
             "colorScheme": "Darkly",
             "cursorShape": "vintage",
+            "experimental.autoMarkPrompts": true,
+            "experimental.showMarksOnScrollbar": true,
             "font": {
                 "face": "CaskaydiaCove NF Mono",
                 "size": 12
@@ -47,6 +66,7 @@
                 "name": "Windows PowerShell",
                 "guid": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
                 "backgroundImage": "ms-appdata:///local/Powershell_blue256.png",
+                "backgroundImageStretchMode": "none",
                 "icon": "ms-appdata:///local/PowerShell_blue.png",
                 "hidden": false
             },
@@ -54,6 +74,7 @@
                 "name": "PowerShell -NoProfile",
                 "guid": "{54659ce2-8d1f-40dd-b671-533b9d1635bc}",
                 "backgroundImage": "ms-appdata:///local/Powershell_blue256.png",
+                "backgroundImageStretchMode": "none",
                 "icon": "ms-appdata:///local/PowerShell_blue.png",
                 "commandline": "powershell.exe -NoProfile",
                 "startingDirectory": "%USERPROFILE%"
@@ -63,6 +84,7 @@
                 "source": "Windows.Terminal.PowershellCore",
                 "guid": "{a3a2e83a-884a-5379-baa8-16f193a13b21}",
                 "backgroundImage": "ms-appdata:///local/Powershell_av256.png",
+                "backgroundImageStretchMode": "none",
                 "icon": "ms-appx:///ProfileIcons/pwsh-preview.png",
                 "hidden": false
             },
@@ -71,6 +93,7 @@
                 "commandline": "pwsh.exe -NoProfile",
                 "guid": "{8340ed4a-61a8-4ea0-b524-c33fa2e861e2}",
                 "backgroundImage": "ms-appdata:///local/Powershell_av256.png",
+                "backgroundImageStretchMode": "none",
                 "icon": "ms-appx:///ProfileIcons/pwsh-preview.png",
                 "startingDirectory": "%USERPROFILE%"
             },
@@ -84,6 +107,7 @@
                 "source": "Windows.Terminal.Azure",
                 "guid": "{b453ae62-4e3d-5e58-b989-0a998ec441b8}",
                 "backgroundImage": "ms-appdata:///local/Cloud.png",
+                "backgroundImageStretchMode": "none",
                 "hidden": false
             },
             {
@@ -91,6 +115,7 @@
                 "source": "Windows.Terminal.PowershellCore",
                 "guid": "{574e775e-4f2a-5b96-ac1e-a2962a402336}",
                 "backgroundImage": "ms-appdata:///local/Powershell_black256.png",
+                "backgroundImageStretchMode": "none",
                 "icon": "ms-appx:///ProfileIcons/pwsh.png",
                 "hidden": false
             },
@@ -99,14 +124,9 @@
                 "commandline": "pwsh.exe -NoProfile",
                 "guid": "{e48db962-18af-4eec-af6a-f77175ef3a71}",
                 "backgroundImage": "ms-appdata:///local/Powershell_black256.png",
+                "backgroundImageStretchMode": "none",
                 "icon": "ms-appx:///ProfileIcons/pwsh.png",
                 "startingDirectory": "%USERPROFILE%"
-            },
-            {
-                "name": "PowerShell (dotnet global)",
-                "guid": "{63e31163-583f-5850-9c1e-24e227dd2da9}",
-                "hidden": false,
-                "source": "Windows.Terminal.PowershellCore"
             },
             {
                 "name": "Ubuntu 20.04",
@@ -114,6 +134,7 @@
                 "guid": "{07b52e3e-de2c-5db4-bd2d-ba144ed6c273}",
                 "icon": "ms-appdata:///local/Ubuntu.png",
                 "backgroundImage": "ms-appdata:///local/Ubuntu_256.png",
+                "backgroundImageStretchMode": "none",
                 "hidden": false
             },
             {{ if eq .chezmoi.username "ZEN\\Jaykul" -}}
@@ -130,6 +151,7 @@
                 "guid": "{9688bbef-7465-4a9a-a902-75b3f108b2c9}",
                 "icon": "ms-appdata:///local/Minecraft.ico",
                 "backgroundImage": "ms-appdata:///local/Minecraft_256.png",
+                "backgroundImageStretchMode": "none",
                 "hidden": false
             }
             {{ end -}}
@@ -391,5 +413,24 @@
         }
     ],
     "startOnUserLogin": true,
-    "tabWidthMode": "titleLength"
+    "tabWidthMode": "titleLength",
+    "theme": "Darkly",
+    "themes": [
+        {
+            "name": "Darkly",
+            "tab": {
+                "background": "#310E3F",
+                "showCloseButton": "hover",
+                "unfocusedBackground": null
+            },
+            "tabRow": {
+                "background": "#11002F",
+                "unfocusedBackground": "#11002F"
+            },
+            "window": {
+                "applicationTheme": "dark"
+            }
+        }
+    ],
+    "useAcrylicInTabRow": true
 }

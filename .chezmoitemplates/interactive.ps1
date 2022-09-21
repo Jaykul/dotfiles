@@ -93,14 +93,6 @@ if ($PSStyle.OutputRendering) {
 }
 [PoshCode.Pansies.RgbColor]::ColorMode = 'Rgb24Bit'
 
-# Write-Information "Start weather job."
-$global:WeatherJob = Start-ThreadJob {
-    while ($true) {
-        (Invoke-RestMethod "wttr.in/ROC?u&format=%c%t").TrimEnd('F')
-        Start-Sleep 300
-    }
-} -Name WeatherQuery
-
 $global:GitPromptSettings = New-GitPromptSettings
 $global:GitPromptSettings.BeforeStatus = ''
 $global:GitPromptSettings.AfterStatus = ''
