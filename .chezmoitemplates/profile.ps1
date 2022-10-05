@@ -18,11 +18,12 @@ if (Test-Path ($PathPath = [IO.Path]::ChangeExtension($Profile, ".Path.env"))) {
 {{ if eq .chezmoi.username "LD\\joelbennett" -}}
 # Shortcuts for paths that you will use a lot.
 # LD Teammates WILL use these variables in scripts they put in confluence:
-$ldx = "C:\ldx"
-$dscripts = "$ldx\DevOpsScripts"
-$toolkit = "$dscripts\Toolkit"
-$deut = "$ldx\Deuterium"
-$chamber = "$deut\chamber"
+$LDDefaultJiraProject   = "DOH"
+$LDSource   = $LDx      = "C:\ldx"
+$LDScripts  = $dscripts = "$ldx\DevOpsScripts"
+$LDToolkit  = $toolkit  = "$dscripts\Toolkit"
+$LDDeut     = $deut     = "$ldx\Deuterium"
+$LDChamber  = $chamber  = "$deut\chamber"
 {{ end -}}
 
 
