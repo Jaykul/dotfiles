@@ -14,12 +14,14 @@
     "files.defaultLanguage": "powershell",
     // You should use PowerShell for everything
     "terminal.integrated.defaultProfile.windows": "{{ .shell }}",
+    "terminal.integrated.enableBell": true,
+    "terminal.integrated.shellIntegration.enabled": false,
     // This is the setting for the "PowerShell Integrated Console"
     "powershell.powerShellDefaultVersion": "{{ .shell }} (x64)",
     // Use Windows Terminal for all the "show in terminal" stuff
     "terminal.external.windowsExec": "wt.exe",
-    // Pester 4 for now
-    "powershell.pester.useLegacyCodeLens": true,
+    // Pester 5 now
+    "powershell.pester.useLegacyCodeLens": false,
     "powershell.pester.codeLens": false,
     // One True Brace Style is The Way (when necessary, override in projects)
     "powershell.codeFormatting.preset": "OTBS",
@@ -82,7 +84,7 @@
     "editor.wrappingIndent": "indent",
 
     // I love font ligatures
-    "editor.fontFamily": "'CaskaydiaCove Nerd Font', 'CaskaydiaCove Nerd Font Mono', 'Cascadia Code PL', 'Cascadia Code', 'FuraCode NF Retina', 'FuraCode NF', 'Iosevka NF', 'Fira Code', Consolas, 'Courier New', monospace",
+    "editor.fontFamily": "'CaskaydiaCove Nerd Font', 'CaskaydiaCove Nerd Font Mono', 'CaskaydiaCove NF', 'CaskaydiaCove NF Mono', 'Cascadia Code PL', 'Cascadia Code', 'FuraCode NF Retina', 'FuraCode NF', 'Iosevka NF', 'Fira Code', Consolas, 'Courier New', monospace",
     "editor.fontLigatures": true,
 
     // Personally, I like ALL my editors this way:
@@ -226,6 +228,7 @@
     "git.autoStash": true,
     "git.fetchOnPull": true,
     "git.rebaseWhenSync": true,
+    "git.mergeEditor": true,
     "workbench.startupEditor": "welcomePage",
     "workbench.editorAssociations": {
         "*.ipynb": "jupyter-notebook"
@@ -245,6 +248,7 @@
     "GithubGistExplorer.explorer.gistAscending": false,
     "GithubGistExplorer.explorer.subscriptionSortBy": "Last Updated",
     "GithubGistExplorer.explorer.subscriptionAscending": false,
+    "editor.accessibilitySupport": "off",
     "cSpell.userWords": [
         "Blazor",
         "pwsh"

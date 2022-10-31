@@ -62,8 +62,7 @@ $DefaultModules = @(
 
     @{ ModuleName = "Environment"; RequiredVersion = "1.1.0" }
     @{ ModuleName = "posh-git"; ModuleVersion = "1.1.0" }
-    @{ ModuleName = "PowerLine"; ModuleVersion = "3.4.1" }
-    @{ ModuleName = "PSReadLine"; ModuleVersion="2.4.0" }
+    @{ ModuleName = "PSReadLine"; ModuleVersion = "2.2.4" }
 
     @{ ModuleName = "DefaultParameter"; RequiredVersion = "2.0.0" }
     # @{ ModuleName = "ErrorView"; RequiredVersion = "0.0.2" }
@@ -430,6 +429,7 @@ Update-LDArgumentCompleter -ModuleName "LDXGet", "LDXSet", "LDNetworking", "LDF5
 
 # You must regularly Update-LDModule...
 # But not from inside VS Code, because when I open VS Code, I'm usually opening 3-6 at a time
+
 if ($ENV:TERM_PROGRAM -ne "vscode") {
     # Write-Information "Detected not VS Code"
 
@@ -475,10 +475,68 @@ $PSDefaultParameterValues["*:DeuteriumPath"] = "$deut"
 {{- end }}
 # This allows you to just Import-LDAppSetting "PathToFile"  without having to explicitly add -DeuteriumPath $deut
 # Note that wildcard means this globally affects ANY parameter to ANY script or cmdlet where the parameter is named "DeuteriumPath"
+if ($ENV:TERM_PROGRAM -eq "vscode") {
 
-if ($host.Name -eq "Visual Studio Code Host") {
-    # Write-Information "Detected VS Code"
-    # This module and command are only useable in the "PowerShell Integrated Console" in VS Code
-    Import-Module EditorServicesCommandSuite
-    Import-EditorCommand -Module EditorServicesCommandSuite
+    # The PowerShell Extension host is slightly different:
+    if ($Host.Name -eq "Visual Studio Code Host") {
+        # Write-Information "Detected VS Code"
+        # This module and command are only useable in the "PowerShell Integrated Console" in VS Code
+        Import-Module EditorServicesCommandSuite
+        Import-EditorCommand -Module EditorServicesCommandSuite
+    } else {
+        function global:PSConsoleHostReadLine {
+            $command = PSReadLine\PSConsoleHostReadLine
+            $command
+            # Explicitly set the command line
+            # OSC 633 ; E [; <CommandLine>] ST
+            # Mark pre-execution
+            # OSC 633 ; C ST
+            [Console]::Write("`e]633;E;$($command.Replace("\", "\\").Replace("`n", "\x0a").Replace(";", "\x3b"))`a`e]633;C`a")
+        }
+    }
+
+    # These two blocks are the terminal integration for VS Code
+    New-TerminalBlock {
+        @(
+            # Add command-line to history
+            # OSC 633 ; E [; <CommandLine>] ST
+            if ($Host.Name -eq "Visual Studio Code Host") {
+                "`e]633;E;$((Get-History -Id ($MyInvocation.HistoryId -1)).CommandLine.Replace("\", "\\").Replace("`n", "\x0a").Replace(";", "\x3b"))`a"
+            }
+            # Command finished exit code
+            # OSC 633 ; D [; <ExitCode>] ST
+            if ("PoshCode.TerminalBlock" -as "Type") {
+                $ExitCode = [int]![PoshCode.TerminalBlock]::LastSuccess
+            }
+            "`e]633;D;$ExitCode`a"
+            # Current working directory
+            # OSC 633 ; <Property>=<Value> ST
+            "`e]633;P;Cwd=$($ExecutionContext.SessionState.Path.CurrentFileSystemLocation)`a"
+            # Prompt started
+            # OSC 633 ; A ST
+            "`e]633;A`a"
+        ) -join ""
+    }  -Caps '' | Add-PowerLineBlock -Index 0
+
+    New-TerminalBlock {
+        # Prompt end
+        # OSC 633 ; B ST
+        "`e]633;B`a"
+    }  -Caps '' | Add-PowerLineBlock -Index -1
+
+    # Set IsWindows property
+    [Console]::Write("`e]633;P;IsWindows=$($IsWindows)`a")
+
+    # Remap key handlers to the VS Code keybindings
+    function Copy-PSReadlineKeyHandler {
+        param ([string[]]$Current, [string[]]$Replacement)
+        if ($Handler = Get-PSReadLineKeyHandler -Chord $Current | Select-Object -First 1) {
+            Set-PSReadLineKeyHandler -Chord $Replacement -Function $Handler.Function
+        }
+    }
+    Copy-PSReadlineKeyHandler 'Ctrl+Spacebar' 'F12,a'
+    Copy-PSReadlineKeyHandler 'Alt+Spacebar' 'F12,b'
+    Copy-PSReadlineKeyHandler 'Shift+Enter' 'F12,c'
+    Copy-PSReadlineKeyHandler 'Shift+End' 'F12,d'
+
 }
