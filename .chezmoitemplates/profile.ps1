@@ -1,4 +1,4 @@
-﻿trap { Write-Warning ($_.ScriptStackTrace | Out-String) }
+trap { Write-Warning ($_.ScriptStackTrace | Out-String) }
 # $InformationPreference = "Continue"
 # I wish $Profile was in $Home, but since it's not:
 $ProfileDir = $PSScriptRoot
@@ -36,7 +36,7 @@ if ($Host.UI.RawUI.KeyAvailable) {
     }
     if ($Controlled) {
         Write-Warning "CTRL: Skipping Interactive Config. To complete, run:`n. `$ProfileDir\interactive.ps1"
-        function prompt { "$([char]27)[36m$($MyInvocation.HistoryId)$([char]27)[37m $pwd$([char]27)[0m`n❯" }
+        function prompt { "$([char]27)[36m$($MyInvocation.HistoryId)$([char]27)[37m $pwd$([char]27)[0m`n$([char]0x276f)" }
         return
     }
 }
