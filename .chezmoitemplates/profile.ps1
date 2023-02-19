@@ -4,7 +4,7 @@ trap { Write-Warning ($_.ScriptStackTrace | Out-String) }
 $ProfileDir = $PSScriptRoot
 
 # I can run `Update-PSModulePath` any time, but I don't by default
-Set-Alias Update-PSModulePath $ProfileDir\Update-PSModulePath.ps1
+Set-Alias Update-PSModulePath $Home\PowerShell\Scripts\Update-PSModulePath.ps1
 # I just read the cached values from the last run
 if (Test-Path ($PSModulePathPath = [IO.Path]::ChangeExtension($Profile, ".PSModulePath.env"))) {
     $Env:PSModulePath_Before = $Env:PSModulePath
@@ -13,6 +13,8 @@ if (Test-Path ($PSModulePathPath = [IO.Path]::ChangeExtension($Profile, ".PSModu
 if (Test-Path ($PathPath = [IO.Path]::ChangeExtension($Profile, ".Path.env"))) {
     $Env:Path_Before = $Env:Path
     $Env:Path = @(Get-Content $PathPath) -join [IO.Path]::PathSeparator
+} else {
+    Update-PSModulePath
 }
 
 {{ if eq .chezmoi.username "LD\\joelbennett" -}}

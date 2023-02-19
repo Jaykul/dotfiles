@@ -111,20 +111,28 @@ function Select-UniquePath {
 }
 
 # NOTES:
+# 0. A hack for PowerShellGet 3.x
+#     a. All versions of PowerShell use the same Env:PSModulePath
+#     b. PowerShellGet 3 uses PSModulePath _before_ it's hard-coded locations.
+#     c. If you put a shared location (outside your documents folder), PowerShellGet will use that first
 # 1. The main concern is to keep things in order:
 #     a. User path ($Home) before machine path ($PSHome)
-#     b. current version before other versions
+#     b. Current version before other versions
 #     c. Existing PSModulePath before other versions
 # 2. I don't worry about duplicates because `Select-UniquePath` takes care of it
 # 3. I don't worry about missing paths, because `Select-UniquePath` takes care of it
 # 4. I don't worry about x86 because I never use it.
 # 5. I don't worry about linux because I add paths based on `$PSScriptRoot`, `$Profile` and `$PSHome`
 
-# The first path in PSModulePath needs to be the "Modules" folder which is next to your $profile:
+# Before paths that are next to my $profile, I want a path that's outside of my documents folder (and thus, outside OneDrive)
+@([IO.Path]::Combine($Home, "PowerShell", "Modules")) +
+# Then, the normal location next my $profile:
 @([IO.Path]::Combine($ProfileDir, "Modules")) +
-# We need to make sure this version's PSHome comes before any other version
-# To guarantee that, we put it here in second place (before the current PSModulePath value)...
+# Finally, this version's PSHome
 @([IO.Path]::Combine($PSHome, "Modules")) +
+# And then ... weirdly, I'm adding my Scripts path
+# PowerShellGet 3 will see it in PSMODULEPATH and use it
+@([IO.Path]::Combine($Home, "PowerShell", "Scripts")) +
 # Then we can use whatever was in the PSModulePath environment variable
 @(
     # But I don't just use $ENV:PSModulePath, because I overwrite it in my profile with cached output from this!
@@ -135,21 +143,23 @@ function Select-UniquePath {
         [System.Environment]::GetEnvironmentVariable("PSMODULEPATH", "User")
     }
 ) +
-# Just to make sure we don't miss anything
+# If we're on Windows, just to make sure we don't miss anything
 # Add the Module paths for other PowerShell versions down here
+$(if (!$IsMacOS -and !$IsLinux) {
 @(Convert-Path @(
         [IO.Path]::Combine([IO.Path]::GetDirectoryName($ProfileDir), "*PowerShell\Modules")
         # These may be duplicate or not exist, but it doesn't matter
         "$Env:ProgramFiles\*PowerShell\Modules"
         "$Env:ProgramFiles\*PowerShell\*\Modules"
         "$Env:SystemRoot\System32\*PowerShell\*\Modules"
-    )) +
+    ))
+}) +
+    # This is likely to result in duplicates, but we'll remove those at the end
 @(Get-ChildItem ([IO.Path]::Combine([IO.Path]::GetDirectoryName([IO.Path]::GetDirectoryName($PSHome)), "*PowerShell")) -Filter Modules -Recurse -Depth 2).FullName +
 # Put my ~\Projects\Modules on the end, so I can load my dev builds by version number when I want to
 @("$Home\Projects\Modules") +
-# Avoid duplicates and ensure canonical path case
-@() |
-Select-UniquePath -OutPathName Env:PSModulePath -OutPathNameAsArray $PSModulePathFile -CaseInsensitive:$CaseInsensitive -RemoveNonExistent
+# Finally, to avoid duplicates and ensure canonical path case, pass it all through Select-UniquePath, set ENV and cache it on disc
+@() | Select-UniquePath -OutPathName Env:PSModulePath -OutPathNameAsArray $PSModulePathFile -CaseInsensitive:$CaseInsensitive -RemoveNonExistent
 
 # I want to make sure that THIS version's Scripts (and then other versions) path is in the PATH
 # But don't use $ENV:PATH here because I wiped it's original contents with previously cached output from here
@@ -165,5 +175,5 @@ Select-UniquePath -OutPathName Env:PSModulePath -OutPathNameAsArray $PSModulePat
 ) +
 @([IO.Path]::Combine($ProfileDir, "Scripts")) +
 @(Get-ChildItem ([IO.Path]::Combine([IO.Path]::GetDirectoryName($ProfileDir), "*PowerShell\*")) -Filter Scripts -Directory).FullName +
-# Avoid duplicates and ensure canonical path case
+# Finally, to avoid duplicates and ensure canonical path case, pass it all through Select-UniquePath, set ENV and cache it on disc
 @() | Select-UniquePath -OutPathName Env:Path -OutPathNameAsArray $PathFile -CaseInsensitive:$CaseInsensitive -RemoveNonExistent

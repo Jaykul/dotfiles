@@ -1,13 +1,13 @@
 [push]
 	default = current
-[core]
-	editor = code-insiders --wait
 [user]
 	name = Joel Bennett
 	email = {{ .email }}
 [pull]
 	rebase = true
 [core]
+	editor = code-insiders --wait
+	sshCommand = \"C:/Windows/System32/OpenSSH/ssh.exe\"
 	pager = delta
 
 [delta]
