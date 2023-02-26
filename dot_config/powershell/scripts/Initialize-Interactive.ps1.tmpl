@@ -1,6 +1,7 @@
 # We need to force encoding to UTF8 for PSReadLine to do the right thing with extended characters
 # But we need to make sure it's UTF8-NoBOM
 [Console]::OutputEncoding = [Console]::InputEncoding = $OutputEncoding = [System.Text.UTF8Encoding]::new()
+$global:IsVSCode = $ENV:TERM_PROGRAM -eq "vscode"
 
 # Just a handful of additional TypeAccelerators
 $xlr8r = [psobject].assembly.gettype("System.Management.Automation.TypeAccelerators")
@@ -49,15 +50,16 @@ $DefaultModules = @(
     @{ ModuleName = "TerminalBlocks"; ModuleVersion = "1.0.0" }
     @{ ModuleName = "PowerLine"; ModuleVersion = "4.0.0" }
 
+    @{ ModuleName = "EzTheme"; ModuleVersion = "0.1.0" }
+    @{ ModuleName = "Theme.PowerShell"; ModuleVersion = "0.1.0" }
+    @{ ModuleName = "Theme.PSReadline"; ModuleVersion = "0.1.0" }
     if ($Env:WT_SESSION) {
-        @{ ModuleName = "EzTheme"; ModuleVersion = "0.1.0" }
-        @{ ModuleName = "Theme.PowerShell"; ModuleVersion = "0.1.0" }
-        @{ ModuleName = "Theme.PSReadline"; ModuleVersion = "0.1.0" }
         @{ ModuleName = "Theme.WindowsTerminal"; ModuleVersion = "0.1.0" }
     } else {
-        @{ ModuleName = "EzTheme"; ModuleVersion = "0.1.1" }
-        @{ ModuleName = "Theme.PowerShell"; ModuleVersion = "0.1.0" }
-        @{ ModuleName = "Theme.PSReadline"; ModuleVersion = "0.1.0" }
+        @{ ModuleName = "Theme.Terminal"; ModuleVersion = "0.1.0" }
+    }
+    if ($PSStyle) {
+        @{ ModuleName = "Theme.PSStyle"; ModuleVersion = "0.1.0" }
     }
 
     @{ ModuleName = "Environment"; RequiredVersion = "1.1.0" }
@@ -98,6 +100,76 @@ $global:GitPromptSettings.AfterStatus = ''
 $global:GitPromptSettings.PathStatusSeparator = ''
 $global:GitPromptSettings.BeforeStash.Text = "$(Text '&ReverseSeparator;')"
 $global:GitPromptSettings.AfterStash.Text = "$(Text '&Separator;')"
+
+
+# If the TERM_PROGRAM supports shell integration, add some things to the prompt/readline before we output the prompt
+# https://gitlab.freedesktop.org/Per_Bothner/specifications/blob/master/proposals/semantic-prompts.md
+# https://code.visualstudio.com/docs/terminal/shell-integration#_manual-installation
+# https://wezfurlong.org/wezterm/shell-integration.html
+$global:EnableShellIntegration = $ENV:TERM_PROGRAM -in "vscode", "WezTerm"
+if ($EnableShellIntegration) {
+    function global:PSConsoleHostReadLine {
+        $command = PSReadLine\PSConsoleHostReadLine
+        # Explicitly set the command line (VSCODE only)
+        # OSC 633 ; E [; <CommandLine>] ST
+        [Console]::Write("$([char]0x1b)]633;E;$($command.Replace("\", "\\").Replace("`n", "\x0a").Replace(";", "\x3b"))`a")
+        # End of prompt and start of user input
+        # OSC 133 ; B ST
+        [Console]::Write("$([char]0x1b)]133;B`a")
+        $command
+        # End of input, and start of output.
+        # OSC 133 ; C ST
+        [Console]::Write("$([char]0x1b)]133;C`a")
+    }
+
+    # This doesn't need to run if $MyInvocation.HistoryId hasn't changed...
+    [PoshCode.TerminalBlock]@{
+        MyInvocation = "Write-CommandEnd"
+        Caps         = ""
+        Content      = @(
+            # Command finished exit code
+            # OSC 133 ; D [; <ExitCode>] ST
+            "$([char]0x1b)]133;D;$([int]![PoshCode.TerminalBlock]::LastSuccess)`a"
+            if ($IsVSCode -and [PoshCode.TerminalBlock]::LastSuccess) {
+                # Add command-line to history
+                # OSC 133 ; E [; <CommandLine>] ST
+                "$([char]0x1b)]633;E;$((Get-History -Id ($MyInvocation.HistoryId -1)).CommandLine.Replace("\", "\\").Replace("`n", "\x0a").Replace(";", "\x3b"))`a"
+                # Current working directory
+                # OSC 633 ; <Property>=<Value> ST
+                "$([char]0x1b)]633;P;Cwd=$($ExecutionContext.SessionState.Path.CurrentFileSystemLocation)`a"
+            } else {
+                # OSC 7; Update the working directory
+                "$([char]0x1b)]7;file://${env:COMPUTERNAME}/$($ExecutionContext.SessionState.Path.CurrentFileSystemLocation)`a"
+            }
+        ) -join ""
+    } | Add-PowerLineBlock -Index 0
+
+    # Prompt started
+    # OSC 133 ; A ST
+    [PoshCode.TerminalBlock]@{
+        MyInvocation = "Write-PromptStart"
+        Content      = "$([char]0x1b)]133;A`a"
+        Caps         = ""
+    }  | Add-PowerLineBlock -Index 1
+
+    if ($IsVSCode) {
+        # Set IsWindows property
+        [Console]::Write("$([char]0x1b)]633;P;IsWindows=$($IsWindows)`a")
+
+        # Remap key handlers to the VS Code keybindings
+        function Copy-PSReadlineKeyHandler {
+            param ([string[]]$Current, [string[]]$Replacement)
+            if ($Handler = Get-PSReadLineKeyHandler -Chord $Current | Select-Object -First 1) {
+                Set-PSReadLineKeyHandler -Chord $Replacement -Function $Handler.Function
+            }
+        }
+        Copy-PSReadlineKeyHandler 'Ctrl+Spacebar' 'F12,a'
+        Copy-PSReadlineKeyHandler 'Alt+Spacebar' 'F12,b'
+        Copy-PSReadlineKeyHandler 'Shift+Enter' 'F12,c'
+        Copy-PSReadlineKeyHandler 'Shift+End' 'F12,d'
+    }
+
+}
 
 
 # Write-Information "Write PowerLine Prompt"
@@ -429,8 +501,7 @@ Update-LDArgumentCompleter -ModuleName "LDXGet", "LDXSet", "LDNetworking", "LDF5
 
 # You must regularly Update-LDModule...
 # But not from inside VS Code, because when I open VS Code, I'm usually opening 3-6 at a time
-
-if ($ENV:TERM_PROGRAM -ne "vscode") {
+if (!$IsVSCode) {
     # Write-Information "Detected not VS Code"
 
     $Now = Get-Date
@@ -473,70 +544,11 @@ if ($ENV:TERM_PROGRAM -ne "vscode") {
 # Make your life easier, set your deuterium path as a default
 $PSDefaultParameterValues["*:DeuteriumPath"] = "$deut"
 {{- end }}
-# This allows you to just Import-LDAppSetting "PathToFile"  without having to explicitly add -DeuteriumPath $deut
-# Note that wildcard means this globally affects ANY parameter to ANY script or cmdlet where the parameter is named "DeuteriumPath"
-if ($ENV:TERM_PROGRAM -eq "vscode") {
 
-    # The PowerShell Extension host is slightly different:
-    if ($Host.Name -eq "Visual Studio Code Host") {
-        # Write-Information "Detected VS Code"
-        # This module and command are only useable in the "PowerShell Integrated Console" in VS Code
-        Import-Module EditorServicesCommandSuite
-        Import-EditorCommand -Module EditorServicesCommandSuite
-    } else {
-        function global:PSConsoleHostReadLine {
-            $command = PSReadLine\PSConsoleHostReadLine
-            $command
-            # Explicitly set the command line
-            # OSC 633 ; E [; <CommandLine>] ST
-            # Mark pre-execution
-            # OSC 633 ; C ST
-            [Console]::Write("`e]633;E;$($command.Replace("\", "\\").Replace("`n", "\x0a").Replace(";", "\x3b"))`a`e]633;C`a")
-        }
-    }
-
-    # These two blocks are the terminal integration for VS Code
-    New-TerminalBlock {
-        @(
-            # Add command-line to history
-            # OSC 633 ; E [; <CommandLine>] ST
-            if ($Host.Name -eq "Visual Studio Code Host") {
-                "`e]633;E;$((Get-History -Id ($MyInvocation.HistoryId -1)).CommandLine.Replace("\", "\\").Replace("`n", "\x0a").Replace(";", "\x3b"))`a"
-            }
-            # Command finished exit code
-            # OSC 633 ; D [; <ExitCode>] ST
-            if ("PoshCode.TerminalBlock" -as "Type") {
-                $ExitCode = [int]![PoshCode.TerminalBlock]::LastSuccess
-            }
-            "`e]633;D;$ExitCode`a"
-            # Current working directory
-            # OSC 633 ; <Property>=<Value> ST
-            "`e]633;P;Cwd=$($ExecutionContext.SessionState.Path.CurrentFileSystemLocation)`a"
-            # Prompt started
-            # OSC 633 ; A ST
-            "`e]633;A`a"
-        ) -join ""
-    }  -Caps '' | Add-PowerLineBlock -Index 0
-
-    New-TerminalBlock {
-        # Prompt end
-        # OSC 633 ; B ST
-        "`e]633;B`a"
-    }  -Caps '' | Add-PowerLineBlock -Index -1
-
-    # Set IsWindows property
-    [Console]::Write("`e]633;P;IsWindows=$($IsWindows)`a")
-
-    # Remap key handlers to the VS Code keybindings
-    function Copy-PSReadlineKeyHandler {
-        param ([string[]]$Current, [string[]]$Replacement)
-        if ($Handler = Get-PSReadLineKeyHandler -Chord $Current | Select-Object -First 1) {
-            Set-PSReadLineKeyHandler -Chord $Replacement -Function $Handler.Function
-        }
-    }
-    Copy-PSReadlineKeyHandler 'Ctrl+Spacebar' 'F12,a'
-    Copy-PSReadlineKeyHandler 'Alt+Spacebar' 'F12,b'
-    Copy-PSReadlineKeyHandler 'Shift+Enter' 'F12,c'
-    Copy-PSReadlineKeyHandler 'Shift+End' 'F12,d'
-
+# The PowerShell Extension host is slightly different:
+if ($IsVSCode -and $Host.Name -eq "Visual Studio Code Host") {
+    # Write-Information "Detected VS Code"
+    # This module and command are only useable in the "PowerShell Integrated Console" in VS Code
+    Import-Module EditorServicesCommandSuite
+    Import-EditorCommand -Module EditorServicesCommandSuite
 }
