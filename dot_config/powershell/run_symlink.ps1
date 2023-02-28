@@ -1,4 +1,4 @@
-Install-PSResource EzTheme, Theme.PowerShell, Theme.PSReadLine, Theme.Terminal, Theme.PSStyle -Prerelease
+Install-PSResource EzTheme, Theme.PowerShell, Theme.PSReadLine, Theme.Terminal, Theme.PSStyle -Prerelease -WarningAction Ignore
 if ($Env:OneDriveCommercial) {
     # The script will run in the current directory
     # It won't be copied there, so we have to use PWD not PSScriptRoot

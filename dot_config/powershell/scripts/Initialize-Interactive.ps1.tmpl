@@ -109,13 +109,13 @@ $global:GitPromptSettings.AfterStash.Text = "$(Text '&Separator;')"
 $global:EnableShellIntegration = $ENV:TERM_PROGRAM -in "vscode", "WezTerm"
 if ($EnableShellIntegration) {
     function global:PSConsoleHostReadLine {
+        # End of prompt and start of user input
+        # OSC 133 ; B ST
+        [Console]::Write("$([char]0x1b)]133;B`a")
         $command = PSReadLine\PSConsoleHostReadLine
         # Explicitly set the command line (VSCODE only)
         # OSC 633 ; E [; <CommandLine>] ST
         [Console]::Write("$([char]0x1b)]633;E;$($command.Replace("\", "\\").Replace("`n", "\x0a").Replace(";", "\x3b"))`a")
-        # End of prompt and start of user input
-        # OSC 133 ; B ST
-        [Console]::Write("$([char]0x1b)]133;B`a")
         $command
         # End of input, and start of output.
         # OSC 133 ; C ST
