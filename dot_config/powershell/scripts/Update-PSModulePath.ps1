@@ -130,18 +130,18 @@ $DataHome = if ($ENV:XDG_DATA_HOME) {
 }
 
 # Before paths that are next to my $profile, I want a path that's outside of my documents folder, and thus, outside OneDrive
-@("$DataHome/powershell/Modules") +
+@("$DataHome/powershell/Modules"
 # Then, the normal location next my $profile:
-@([IO.Path]::Combine($ProfileDir, "Modules")) +
+[IO.Path]::Combine($ProfileDir, "Modules")
 # Finally, this version's PSHome
-@([IO.Path]::Combine($PSHome, "Modules")) +
+[IO.Path]::Combine($PSHome, "Modules")) +
 # Then we can use whatever was in the PSModulePath environment variable
 @(
     # But I don't just use $ENV:PSModulePath, because I overwrite it in my profile with cached output from this!
     if ($Env:PSModulePath_Before) {
         $Env:PSModulePath_Before
     } else {
-        [System.Environment]::GetEnvironmentVariable("PSMODULEPATH", "Machine") + ';' +
+        [System.Environment]::GetEnvironmentVariable("PSMODULEPATH", "Machine")
         [System.Environment]::GetEnvironmentVariable("PSMODULEPATH", "User")
     }
 ) +
@@ -171,7 +171,7 @@ $(if (!$IsMacOS -and !$IsLinux) {
     if ($Env:PATH_Before) {
         $Env:PATH_Before
     } else {
-        [System.Environment]::GetEnvironmentVariable("PATH", "Machine") + ';' +
+        [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
         [System.Environment]::GetEnvironmentVariable("PATH", "User")
     }
 ) +
