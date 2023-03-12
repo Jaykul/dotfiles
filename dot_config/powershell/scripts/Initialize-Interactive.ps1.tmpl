@@ -80,12 +80,13 @@ $DefaultModules = @(
 Import-Module -FullyQualifiedName $DefaultModules -Scope Global
 
 # Write-Information "Importing Theme."
-if (([PoshCode.TerminalBlock]::Elevated) -and (Get-Theme "${Env:UserName}-Elevated")) {
-    Import-Theme "${Env:UserName}-Elevated" -IncludeModule Theme.PowerShell, Theme.PSReadLine, Theme.Terminal, PowerLine
-} elseif (($PSVersionTable.PSVersion.Major -le 7) -and (Get-Theme "${Env:UserName}-Legacy")) {
-    Import-Theme "${Env:UserName}-Legacy"
+$User
+if (([PoshCode.TerminalBlock]::Elevated) -and (Get-Theme "$([Environment]::UserName)-Elevated")) {
+    Import-Theme "$([Environment]::UserName)-Elevated" -IncludeModule Theme.PowerShell, Theme.PSReadLine, Theme.Terminal, PowerLine
+} elseif (($PSVersionTable.PSVersion.Major -le 7) -and (Get-Theme "$([Environment]::UserName)-Legacy")) {
+    Import-Theme "$([Environment]::UserName)-Legacy"
 } else {
-    Import-Theme "${Env:UserName}" -IncludeModule Theme.PowerShell, Theme.PSReadLine, Theme.Terminal, PowerLine
+    Import-Theme "$([Environment]::UserName)" -IncludeModule Theme.PowerShell, Theme.PSReadLine, Theme.Terminal, PowerLine
 }
 
 if ($PSStyle.OutputRendering) {
