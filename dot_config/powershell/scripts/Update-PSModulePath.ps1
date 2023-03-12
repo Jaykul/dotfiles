@@ -57,6 +57,7 @@ function Select-UniquePath {
         # Write-Information "Select-UniquePath ENTER BEGIN $fg:red$Delimiter$fg:clear $Path" -Tags "Trace", "Enter", "Begin"
         # [string[]]$oldFolders = @()
         [System.Collections.Generic.List[string]]$inputPaths = @()
+        Write-Host "CaseInsensitive: $CaseInsensitive" -ForegroundColor Magenta
 
         # Write-Information "Select-UniquePath EXIT BEGIN $fg:red$Delimiter$fg:clear $Path" -Tags "Trace", "Exit", "Begin"
     }
@@ -129,7 +130,7 @@ $DataHome = if ($ENV:XDG_DATA_HOME) {
 }
 
 # Before paths that are next to my $profile, I want a path that's outside of my documents folder, and thus, outside OneDrive
-"$DataHome/powershell/Modules" +
+@("$DataHome/powershell/Modules") +
 # Then, the normal location next my $profile:
 @([IO.Path]::Combine($ProfileDir, "Modules")) +
 # Finally, this version's PSHome
