@@ -1,7 +1,6 @@
 #!/usr/bin/env pwsh
-Install-Module PowerShellGet -AllowPrerelease -Force
-Set-PSResourceRepository -Name PSGallery -Trusted
-Install-PSResource EzTheme, Theme.PowerShell, Theme.PSReadLine, Theme.Terminal, Theme.PSStyle -Prerelease -WarningAction Ignore
+
+# profile hash: {{ include "profile.ps1" | sha256sum }}
 
 # On Windows, I need an extra copy in the WindowsPowerShell folder
 if ($Env:OneDriveCommercial) {
@@ -15,3 +14,8 @@ if ($Env:OneDriveCommercial) {
 if ($Profile.CurrentUserAllHosts -ne (Convert-Path profile.ps1)) {
     Copy-Item profile.ps1 $Profile.CurrentUserAllHosts
 }
+
+Install-Module PowerShellGet -AllowPrerelease -Force
+Set-PSResourceRepository -Name PSGallery -Trusted
+Install-PSResource EzTheme, Theme.PowerShell, Theme.PSReadLine, Theme.Terminal, Theme.PSStyle -Prerelease -WarningAction Ignore
+
