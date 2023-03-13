@@ -14,8 +14,3 @@ if ($Env:OneDriveCommercial) {
 if ($Profile.CurrentUserAllHosts -ne (Convert-Path profile.ps1)) {
     Copy-Item profile.ps1 $Profile.CurrentUserAllHosts
 }
-
-Install-Module PowerShellGet -AllowPrerelease -Force
-Set-PSResourceRepository -Name PSGallery -Trusted
-Install-PSResource EzTheme, Theme.PowerShell, Theme.PSReadLine, Theme.Terminal, Theme.PSStyle -Prerelease -WarningAction Ignore
-

@@ -1,0 +1,16 @@
+# This script needs to install modules whenever I change the Initialize-Interactive script
+# profile hash: {{ include "dot_config/powershell/scripts/Initialize-Interactive.ps1.tmpl" | sha256sum }}
+
+if (!(Get-Module -FullyQualifiedName @{ ModuleName = "PowerShellGet"; ModuleVersion = "3.0.19" })) {
+    Install-Module PowerShellGet -AllowPrerelease -Scope CurrentUser -Force
+    Set-PSResourceRepository -Name PSGallery -Trusted
+}
+
+{{ template "DefaultModules.ps1" . }}
+
+$RequiredModules = @{}
+$DefaultModules | ForEach-Object {
+    $RequiredModules[$_.ModuleName] = if ($_.ModuleVersion) { "[$($_.ModuleVersion),)" } else { "[$($_.RequiredVersion)]" }
+}
+Write-Warning "Pre-installing $($RequiredModules.Count) modules: $($RequiredModules.Keys -join ', ')"
+Install-PSResource -RequiredResource $RequiredModules -Scope CurrentUser
