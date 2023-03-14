@@ -441,8 +441,11 @@ Set-PSReadLineKeyHandler -Key "Alt+j" {
     [ReadLine]::SelectForwardChar($null, ($nextAst.Extent.EndOffset - $nextAst.Extent.StartOffset) - $endOffsetAdjustment)
 } -Description "Select next argument in the command line (or use a digit to select by index)"
 
-Set-PSReadLineOption -HistoryNoDuplicates:$false -MaximumHistoryCount 8kb -EditMode Windows -PredictionViewStyle ListView -ContinuationPrompt "$(Text '&ColorSeparator; ')"
+# Write-Information "Write PowerLine Prompt"
+# Now that we've imported PowerLine and configured Posh-Git we can call the NEW prompt function:
+Write-PowerlinePrompt
 
+Set-PSReadLineOption -HistoryNoDuplicates:$false -MaximumHistoryCount 8kb -EditMode Windows -PredictionViewStyle ListView -ContinuationPrompt "$(Text '&ColorSeparator; ')"
 
 # this nonsense is temporary, just because I'm using a pre-release PSReadLine and I love it...
 if ($PSVersionTable.PSVersion -ge "7.1") {
@@ -511,8 +514,3 @@ if ($IsVSCode -and $Host.Name -eq "Visual Studio Code Host") {
     Import-Module EditorServicesCommandSuite
     Import-EditorCommand -Module EditorServicesCommandSuite
 }
-
-
-# Write-Information "Write PowerLine Prompt"
-# Now that we've imported PowerLine and configured Posh-Git we can call the NEW prompt function:
-Write-PowerlinePrompt
