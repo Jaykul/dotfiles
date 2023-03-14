@@ -43,7 +43,6 @@ if ($pwd.Path -eq "$Env:SystemRoot\System32") {
 Import-Module -FullyQualifiedName $DefaultModules -Scope Global
 
 # Write-Information "Importing Theme."
-$User
 if (([PoshCode.TerminalBlock]::Elevated) -and (Get-Theme "$([Environment]::UserName)-Elevated")) {
     Import-Theme "$([Environment]::UserName)-Elevated" -IncludeModule Theme.PowerShell, Theme.PSReadLine, Theme.Terminal, PowerLine
 } elseif (($PSVersionTable.PSVersion.Major -le 7) -and (Get-Theme "$([Environment]::UserName)-Legacy")) {
@@ -136,11 +135,6 @@ if ($EnableShellIntegration) {
     }
 
 }
-
-
-# Write-Information "Write PowerLine Prompt"
-# Now that we've imported PowerLine and configured Posh-Git we can call the NEW prompt function:
-Write-PowerlinePrompt
 
 # Write-Information "Configure PSReadLine KeyHandlers"
 # This would be SO MUCH FASTER if PSReadLine had a config file instead of me calling this cmdlet 15 or 20 times
@@ -517,3 +511,8 @@ if ($IsVSCode -and $Host.Name -eq "Visual Studio Code Host") {
     Import-Module EditorServicesCommandSuite
     Import-EditorCommand -Module EditorServicesCommandSuite
 }
+
+
+# Write-Information "Write PowerLine Prompt"
+# Now that we've imported PowerLine and configured Posh-Git we can call the NEW prompt function:
+Write-PowerlinePrompt
