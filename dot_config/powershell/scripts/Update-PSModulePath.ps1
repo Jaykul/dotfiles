@@ -57,8 +57,6 @@ function Select-UniquePath {
         # Write-Information "Select-UniquePath ENTER BEGIN $fg:red$Delimiter$fg:clear $Path" -Tags "Trace", "Enter", "Begin"
         # [string[]]$oldFolders = @()
         [System.Collections.Generic.List[string]]$inputPaths = @()
-        Write-Host "CaseInsensitive: $CaseInsensitive" -ForegroundColor Magenta
-
         # Write-Information "Select-UniquePath EXIT BEGIN $fg:red$Delimiter$fg:clear $Path" -Tags "Trace", "Exit", "Begin"
     }
     process {
