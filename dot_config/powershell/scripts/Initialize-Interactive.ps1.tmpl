@@ -447,16 +447,15 @@ Set-PSReadLineKeyHandler -Key "Alt+j" {
     [ReadLine]::SelectForwardChar($null, ($nextAst.Extent.EndOffset - $nextAst.Extent.StartOffset) - $endOffsetAdjustment)
 } -Description "Select next argument in the command line (or use a digit to select by index)"
 
-Set-PSReadLineOption -HistoryNoDuplicates:$false -MaximumHistoryCount 8kb
+Set-PSReadLineOption -HistoryNoDuplicates:$false -MaximumHistoryCount 8kb -EditMode Windows -PredictionViewStyle ListView -ContinuationPrompt "$(Text '&ColorSeparator; ')"
 
 
 # this nonsense is temporary, just because I'm using a pre-release PSReadLine and I love it...
 if ($PSVersionTable.PSVersion -ge "7.1") {
-    Set-PSReadLineOption -PredictionSource HistoryAndPlugin -PredictionViewStyle ListView
+    Set-PSReadLineOption -PredictionSource HistoryAndPlugin
 } else {
-    Set-PSReadLineOption -PredictionSource History -PredictionViewStyle ListView
+    Set-PSReadLineOption -PredictionSource History
 }
-Set-PSReadLineOption -ContinuationPrompt "$(Text '&ColorSeparator; ')"
 
 {{- if eq .chezmoi.username "LD\\joelbennett" -}}
 # Write-Information "Detected LoanDepot"
