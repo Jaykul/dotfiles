@@ -1,8 +1,8 @@
 # This script needs to install modules whenever I change the Initialize-Interactive script
 # profile hash: {{ include "dot_config/powershell/scripts/Initialize-Interactive.ps1.tmpl" | sha256sum }}
-
+$ErrorView = 'DetailedView'
 if (!(Get-Module -FullyQualifiedName @{ ModuleName = "PowerShellGet"; ModuleVersion = "3.0.19" })) {
-    Install-Module PowerShellGet -AllowPrerelease -Scope CurrentUser -Force
+    Install-Module PowerShellGet -Scope CurrentUser -AllowPrerelease -Force
     Set-PSResourceRepository -Name PSGallery -Trusted
 }
 

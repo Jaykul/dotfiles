@@ -1,6 +1,6 @@
 #!/usr/bin/env pwsh
-
 # profile hash: {{ include "profile.ps1" | sha256sum }}
+$ErrorView = 'DetailedView'
 
 # On Windows, I need an extra copy in the WindowsPowerShell folder
 if ($Env:OneDriveCommercial) {
