@@ -37,10 +37,19 @@ if ($pwd.Path -eq "$Env:SystemRoot\System32") {
     Set-Location $ProfileDir
     {{- end }}
 }
-
 {{ template "DefaultModules.ps1" . }}
-
-Import-Module -FullyQualifiedName $DefaultModules -Scope Global
+try {
+    Import-Module -FullyQualifiedName $DefaultModules -Scope Global -ErrorAction Stop
+} catch {
+    Write-Warning "Failed to import default modules. Trying again, one at a time."
+    foreach($Module in $DefaultModules) {
+        try {
+            Import-Module -FullyQualifiedName $Module -Scope Global -ErrorAction Stop
+        } catch {
+            Write-Warning "Failed to import $($Module.ModuleName) module."
+        }
+    }
+}
 
 # Write-Information "Importing Theme."
 if (([PoshCode.TerminalBlock]::Elevated) -and (Get-Theme "$([Environment]::UserName)-Elevated")) {
@@ -133,7 +142,6 @@ if ($EnableShellIntegration) {
         Copy-PSReadlineKeyHandler 'Shift+Enter' 'F12,c'
         Copy-PSReadlineKeyHandler 'Shift+End' 'F12,d'
     }
-
 }
 
 # Write-Information "Configure PSReadLine KeyHandlers"

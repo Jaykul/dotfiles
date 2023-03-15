@@ -24,13 +24,12 @@ $DefaultModules = @(
 
     @{ ModuleName = "Environment"; RequiredVersion = "1.1.0" }
     @{ ModuleName = "posh-git"; ModuleVersion = "1.1.0" }
-    @{ ModuleName = "PSReadLine"; ModuleVersion = "2.2.4" }
+    @{ ModuleName = "PSReadLine"; ModuleVersion = "2.3.0" }
 
     @{ ModuleName = "DefaultParameter"; RequiredVersion = "2.0.0" }
     # @{ ModuleName = "ErrorView"; RequiredVersion = "0.0.2" }
     @{ ModuleName = "zLocation"; ModuleVersion = "1.4.3" }
-    # @{ ModuleName = "Profile"; ModuleVersion = "1.3.0" }
-    {{ if eq .chezmoi.username "LD\\joelbennett" -}}
+    {{- if eq .chezmoi.username "LD\\joelbennett" }}
     @{ ModuleName = "LDOther"; ModuleVersion = "0.5.0" }
     @{ ModuleName = "LDUtility"; ModuleVersion = "5.7.1" }
     @{ ModuleName = "LDXGet"; ModuleVersion = "6.0.4" }

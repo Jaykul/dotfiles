@@ -1,11 +1,20 @@
+#!/usr/bin/env pwsh
 # This script needs to install modules whenever I change the Initialize-Interactive script
 # profile hash: {{ include "dot_config/powershell/scripts/Initialize-Interactive.ps1.tmpl" | sha256sum }}
 $ErrorView = 'DetailedView'
-if (!(Get-Module -FullyQualifiedName @{ ModuleName = "PowerShellGet"; ModuleVersion = "3.0.17" } -List)) {
-    Install-Module PowerShellGet -Scope CurrentUser -AllowPrerelease -Force
+Get-Module -FullyQualifiedName @{ ModuleName = "PowerShellGet"; ModuleVersion = "3.0.17" } -List -OutVariable PowerShellGet | Out-Host
+
+if (!$PowerShellGet) {
+    Write-Warning ($PSVersionTable | Out-String)
+    Write-Warning ($Env:PSModulePath -replace ([IO.Path]::PathSeparator), "`n")
+    $PowerShellGet = Import-Module PowerShellGet -Passthru
+    Write-Warning "Installing PowerShellGet 3, using PowerShellGet $($PowerShellGet.Version)"
+    $PowerShellGet = Install-Module -Name PowerShellGet -MinimumVersion "3.0.15" -AllowPrerelease -Scope CurrentUser -Force -PassThru
+    Write-Warning "Importing PowerShellGet $($PowerShellGet.Version)"
+    $PowerShellGet | Import-Module -Force
+    Write-Warning "Trusting PSGallery"
     Set-PSResourceRepository -Name PSGallery -Trusted
 }
-
 {{ template "DefaultModules.ps1" . }}
 
 $RequiredModules = @{}
