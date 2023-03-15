@@ -4,13 +4,13 @@ $ErrorView = 'DetailedView'
 
 # On Windows, I need an extra copy in the WindowsPowerShell folder
 if ($Env:OneDriveCommercial) {
-    Get-ChildItem profile.ps1 | ForEach-Object {
-        # Put each file in both the WindowsPowerShell and PowerShell folders
-        Copy-Item $_.FullName -Destination "$Env:OneDriveCommercial\Documents\PowerShell\$($_.Name)"
-        Copy-Item $_.FullName -Destination "$Env:OneDriveCommercial\Documents\WindowsPowerShell\$($_.Name)"
-    }
+    # Put the profile in the WindowsPowerShell and PowerShell folders
+    Copy-Item profile.ps1 -Destination "$Env:OneDriveCommercial\Documents\PowerShell\profile.ps1"
+    Copy-Item profile.ps1 -Destination "$Env:OneDriveCommercial\Documents\WindowsPowerShell\profile.ps1"
 }
 
+# Make sure the profile and config are in the right place
 if ($Profile.CurrentUserAllHosts -ne (Convert-Path profile.ps1)) {
     Copy-Item profile.ps1 $Profile.CurrentUserAllHosts
+    Copy-Item powershell.config.json -Destination "$Env:OneDriveCommercial\Documents\PowerShell\powershell.config.json"
 }
