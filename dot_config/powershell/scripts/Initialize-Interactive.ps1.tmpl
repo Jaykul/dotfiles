@@ -21,14 +21,14 @@ if ($xlr8r::AddReplace) {
     })
 }
 
-# Write-Information "Checking PSModulePath.env"
+# Write-Host "Checking PSModulePath.env"
 # Once a week I want to update the PSModulePath, just in case
 $Before = (Get-Item ($PSModulePathPath = [IO.Path]::ChangeExtension($Profile, ".PSModulePath.env")) -ErrorAction Ignore).LastWriteTime
 if (-not $Before -or (24 * 7) -lt ([DateTime]::Now - $Before).TotalHours) {
     Update-PSModulePath $PSModulePathFile -ProfileDir $ProfileDir
 }
 
-# Write-Information "Setting Location."
+# Write-Host "Setting Location."
 # For default elevated sessions, set the start location where it should be
 if ($pwd.Path -eq "$Env:SystemRoot\System32") {
     {{ if eq .chezmoi.username "LD\\joelbennett" -}}
@@ -51,12 +51,12 @@ try {
     }
 }
 
-# Write-Information "Importing Theme."
+# Write-Host "Importing Theme."
 if (([PoshCode.TerminalBlock]::Elevated) -and (Get-Theme "$([Environment]::UserName)-Elevated")) {
     Import-Theme "$([Environment]::UserName)-Elevated" -IncludeModule Theme.PowerShell, Theme.PSReadLine, Theme.Terminal, PowerLine
 } elseif (($PSVersionTable.PSVersion.Major -le 7) -and (Get-Theme "$([Environment]::UserName)-Legacy")) {
     Import-Theme "$([Environment]::UserName)-Legacy"
-} elseif (Get-Theme "$([Environment]::UserName)-Elevated") {
+} elseif (Get-Theme "$([Environment]::UserName)") {
     Import-Theme "$([Environment]::UserName)" -IncludeModule Theme.PowerShell, Theme.PSReadLine, Theme.Terminal, PowerLine
 } else {
     Import-Theme Darkly -IncludeModule Theme.PowerShell, Theme.PSReadLine, Theme.Terminal, PowerLine
@@ -76,12 +76,19 @@ $global:GitPromptSettings.BeforeStash.Text = "$(Text '&ReverseSeparator;')"
 $global:GitPromptSettings.AfterStash.Text = "$(Text '&Separator;')"
 
 
-# If the TERM_PROGRAM supports shell integration, add some things to the prompt/readline before we output the prompt
+# In case TERM_PROGRAM supports shell integration, add some things to the prompt/readline before we output the prompt
 # https://gitlab.freedesktop.org/Per_Bothner/specifications/blob/master/proposals/semantic-prompts.md
 # https://code.visualstudio.com/docs/terminal/shell-integration#_manual-installation
 # https://wezfurlong.org/wezterm/shell-integration.html
-$global:EnableShellIntegration = $ENV:TERM_PROGRAM -in "vscode", "WezTerm"
-if ($EnableShellIntegration) {
+function global:Enable-ShellIntegration {
+    [CmdletBinding()]
+    param(
+        [switch]$IsVsCode = $IsVSCode
+    )
+
+    if ($IsVSCode) {
+        [Console]::Write("$([char]0x1b)]633;P;IsWindows=$($IsWindows)`a")
+    }
     function global:PSConsoleHostReadLine {
         # End of prompt and start of user input
         # OSC 133 ; B ST
@@ -89,42 +96,51 @@ if ($EnableShellIntegration) {
         $command = PSReadLine\PSConsoleHostReadLine
         # Explicitly set the command line (VSCODE only)
         # OSC 633 ; E [; <CommandLine>] ST
-        [Console]::Write("$([char]0x1b)]633;E;$($command.Replace("\", "\\").Replace("`n", "\x0a").Replace(";", "\x3b"))`a")
-        $command
+        # [Console]::Write("$([char]0x1b)]633;E;$($command.Replace("\", "\\").Replace("`n", "\x0a").Replace(";", "\x3b"))`a")
         # End of input, and start of output.
         # OSC 133 ; C ST
-        [Console]::Write("$([char]0x1b)]133;C`a")
+        [Console]::Write("$([char]0x1b)]633;C`a")
+        $command
     }
 
     # This doesn't need to run if $MyInvocation.HistoryId hasn't changed...
-    [PoshCode.TerminalBlock]@{
+    Add-PowerLineBlock -Index 0 @{
         MyInvocation = "Write-CommandEnd"
         Caps         = ""
-        Content      = @(
-            # Command finished exit code
-            # OSC 133 ; D [; <ExitCode>] ST
-            "$([char]0x1b)]133;D;$([int]![PoshCode.TerminalBlock]::LastSuccess)`a"
-            if ($IsVSCode -and [PoshCode.TerminalBlock]::LastSuccess) {
-                # Add command-line to history
-                # OSC 133 ; E [; <CommandLine>] ST
-                "$([char]0x1b)]633;E;$((Get-History -Id ($MyInvocation.HistoryId -1)).CommandLine.Replace("\", "\\").Replace("`n", "\x0a").Replace(";", "\x3b"))`a"
-                # Current working directory
-                # OSC 633 ; <Property>=<Value> ST
-                "$([char]0x1b)]633;P;Cwd=$($ExecutionContext.SessionState.Path.CurrentFileSystemLocation)`a"
-            } else {
-                # OSC 7; Update the working directory
-                "$([char]0x1b)]7;file://${env:COMPUTERNAME}/$($ExecutionContext.SessionState.Path.CurrentFileSystemLocation)`a"
-            }
-        ) -join ""
-    } | Add-PowerLineBlock -Index 0
+        Content      = {
+            @(
+                if (($MyInvocation.HistoryId -gt 1) -and ($global:LastHistoryId -ne ($global:LastHistoryId = $MyInvocation.HistoryId))) {
+                    if ($IsVSCode) {
+                        # Add command-line to history
+                        # OSC 133 ; E [; <CommandLine>] ST
+                        "$([char]0x1b)]633;E;$((Get-History -Id ($MyInvocation.HistoryId -1) -ErrorAction Ignore).CommandLine.Replace("\", "\\").Replace("`n", "\x0a").Replace(";", "\x3b"))`a"
+                    }
+                    # Command finished exit code
+                    # OSC 133 ; D [; <ExitCode>] ST
+                    "$([char]0x1b)]633;D;$([int]![PoshCode.TerminalBlock]::LastSuccess)`a"
+                    # OSC 7; Update the working directory
+                    "$([char]0x1b)]7;file://${env:COMPUTERNAME}/$($ExecutionContext.SessionState.Path.CurrentFileSystemLocation)`a"
+                }
+            ) -join ""
+        }
+    }
 
     # Prompt started
     # OSC 133 ; A ST
-    [PoshCode.TerminalBlock]@{
+    Add-PowerLineBlock -Index 1 @{
         MyInvocation = "Write-PromptStart"
-        Content      = "$([char]0x1b)]133;A`a"
+        Content      = {
+            # Prompt started
+            # OSC 633 ; A ST
+            "$([char]0x1b)]633;A`a"
+            if ($IsVSCode) {
+                # Current working directory
+                # OSC 633 ; P ; <Property>=<Value> ST
+                "$([char]0x1b)]633;P;Cwd=$($ExecutionContext.SessionState.Path.CurrentFileSystemLocation)`a"
+            }
+        }
         Caps         = ""
-    }  | Add-PowerLineBlock -Index 1
+    }
 
     if ($IsVSCode) {
         # Set IsWindows property
@@ -143,8 +159,10 @@ if ($EnableShellIntegration) {
         Copy-PSReadlineKeyHandler 'Shift+End' 'F12,d'
     }
 }
-
-# Write-Information "Configure PSReadLine KeyHandlers"
+if ($ENV:TERM_PROGRAM -in "vscode", "WezTerm") {
+    Enable-ShellIntegration
+}
+# Write-Host "Configure PSReadLine KeyHandlers"
 # This would be SO MUCH FASTER if PSReadLine had a config file instead of me calling this cmdlet 15 or 20 times
 Set-PSReadLineKeyHandler Ctrl+Alt+c CaptureScreen
 Set-PSReadLineKeyHandler Ctrl+Shift+r ForwardSearchHistory
@@ -449,7 +467,7 @@ Set-PSReadLineKeyHandler -Key "Alt+j" {
     [ReadLine]::SelectForwardChar($null, ($nextAst.Extent.EndOffset - $nextAst.Extent.StartOffset) - $endOffsetAdjustment)
 } -Description "Select next argument in the command line (or use a digit to select by index)"
 
-# Write-Information "Write PowerLine Prompt"
+# Write-Host "Write PowerLine Prompt"
 # Now that we've imported PowerLine and configured Posh-Git we can call the NEW prompt function:
 Write-PowerlinePrompt
 
@@ -463,7 +481,7 @@ if ($PSVersionTable.PSVersion -ge "7.1") {
 }
 
 {{- if eq .chezmoi.username "LD\\joelbennett" -}}
-# Write-Information "Detected LoanDepot"
+# Write-Host "Detected LoanDepot"
 
 # Gives you tab completion on -Component, -Environment, -Datacenter, -ComputerName, -Role parameters on all commands in the below modules.
 # Beware the more modules you add to this list, the longer you powershell profile will take to set up.
@@ -472,7 +490,7 @@ Update-LDArgumentCompleter -ModuleName "LDXGet", "LDXSet", "LDNetworking", "LDF5
 # You must regularly Update-LDModule...
 # But not from inside VS Code, because when I open VS Code, I'm usually opening 3-6 at a time
 if (!$IsVSCode) {
-    # Write-Information "Detected not VS Code"
+    # Write-Host "Detected not VS Code"
 
     $Now = Get-Date
     $LDUtilityManifest = Get-Module -List LDUtility | Get-Item | Select-Object -First 1
@@ -517,7 +535,7 @@ $PSDefaultParameterValues["*:DeuteriumPath"] = "$deut"
 
 # The PowerShell Extension host is slightly different:
 if ($IsVSCode -and $Host.Name -eq "Visual Studio Code Host") {
-    # Write-Information "Detected VS Code"
+    # Write-Host "Detected VS Code"
     # This module and command are only useable in the "PowerShell Integrated Console" in VS Code
     Import-Module EditorServicesCommandSuite
     Import-EditorCommand -Module EditorServicesCommandSuite
