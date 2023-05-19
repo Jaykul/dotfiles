@@ -91,7 +91,7 @@ function Select-UniquePath {
             throw "No valid paths after filter. InputPaths: $($InputPaths -join "`n")"
         }
 
-        [string[]]$Result = [System.Linq.Enumerable]::Distinct($outputPaths, [StringComparer]::OrdinalIgnoreCase)
+        [string[]]$Result = [System.Linq.Enumerable]::Distinct($outputPaths, [StringComparer]::Ordinal)
 
         if ($OutPathNameAsArray) {
             # Write-Information "Set-Content $fg:green$OutPathNameAsArray${fg:clear}:`n$($Result -join "`n")" -Tags "Trace"
