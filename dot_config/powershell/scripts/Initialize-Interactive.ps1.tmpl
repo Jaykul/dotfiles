@@ -162,6 +162,17 @@ function global:Enable-ShellIntegration {
 if ($ENV:TERM_PROGRAM -in "vscode", "WezTerm") {
     Enable-ShellIntegration
 }
+
+# Write-Host "Setting PSReadLine Options."
+Set-PSReadLineOption -HistoryNoDuplicates:$false -MaximumHistoryCount 8kb -EditMode Windows -PredictionViewStyle ListView
+
+# this nonsense is temporary, just because I'm using a pre-release PSReadLine and I love it...
+if ($PSVersionTable.PSVersion -ge "7.1") {
+    Set-PSReadLineOption -PredictionSource HistoryAndPlugin
+} else {
+    Set-PSReadLineOption -PredictionSource History
+}
+
 # Write-Host "Configure PSReadLine KeyHandlers"
 # This would be SO MUCH FASTER if PSReadLine had a config file instead of me calling this cmdlet 15 or 20 times
 Set-PSReadLineKeyHandler Ctrl+Alt+c CaptureScreen
@@ -470,15 +481,6 @@ Set-PSReadLineKeyHandler -Key "Alt+j" {
 # Write-Host "Write PowerLine Prompt"
 # Now that we've imported PowerLine and configured Posh-Git we can call the NEW prompt function:
 Write-PowerlinePrompt
-
-Set-PSReadLineOption -HistoryNoDuplicates:$false -MaximumHistoryCount 8kb -EditMode Windows -PredictionViewStyle ListView -ContinuationPrompt "$(Text '&ColorSeparator; ')"
-
-# this nonsense is temporary, just because I'm using a pre-release PSReadLine and I love it...
-if ($PSVersionTable.PSVersion -ge "7.1") {
-    Set-PSReadLineOption -PredictionSource HistoryAndPlugin
-} else {
-    Set-PSReadLineOption -PredictionSource History
-}
 
 {{- if eq .chezmoi.username "LD\\joelbennett" -}}
 # Write-Host "Detected LoanDepot"
