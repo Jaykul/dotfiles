@@ -53,13 +53,13 @@ try {
 
 # Write-Host "Importing Theme."
 if (([PoshCode.TerminalBlock]::Elevated) -and (Get-Theme "$([Environment]::UserName)-Elevated")) {
-    Import-Theme "$([Environment]::UserName)-Elevated" -IncludeModule Theme.PowerShell, Theme.PSReadLine, Theme.Terminal, PowerLine
+    Import-Theme "$([Environment]::UserName)-Elevated" -Force
 } elseif (($PSVersionTable.PSVersion.Major -le 7) -and (Get-Theme "$([Environment]::UserName)-Legacy")) {
-    Import-Theme "$([Environment]::UserName)-Legacy"
+    Import-Theme "$([Environment]::UserName)-Legacy" -Force
 } elseif (Get-Theme "$([Environment]::UserName)") {
-    Import-Theme "$([Environment]::UserName)" -IncludeModule Theme.PowerShell, Theme.PSReadLine, Theme.Terminal, PowerLine
+    Import-Theme "$([Environment]::UserName)" -Force
 } else {
-    Import-Theme Darkly -IncludeModule Theme.PowerShell, Theme.PSReadLine, Theme.Terminal, PowerLine
+    Import-Theme Darkly -Force
 }
 
 if ($PSStyle.OutputRendering) {
@@ -476,7 +476,7 @@ Set-PSReadLineKeyHandler -Key "Alt+j" {
 # Now that we've imported PowerLine and configured Posh-Git we can call the NEW prompt function:
 Write-PowerlinePrompt
 
-{{- if eq .chezmoi.username "LD\\joelbennett" -}}
+{{ if eq .chezmoi.username "LD\\joelbennett" -}}
 # Write-Host "Detected LoanDepot"
 
 # Gives you tab completion on -Component, -Environment, -Datacenter, -ComputerName, -Role parameters on all commands in the below modules.
