@@ -6,7 +6,7 @@ $DefaultModules = @(
     @{ ModuleName = "Microsoft.PowerShell.Utility"; ModuleVersion = "3.1.0" }
     @{ ModuleName = "Metadata"; ModuleVersion = "1.5.7" }
     @{ ModuleName = "Configuration"; ModuleVersion = "1.5.1" }
-    @{ ModuleName = "Pansies"; ModuleVersion = "2.6.0" }
+    @{ ModuleName = "Pansies"; ModuleVersion = "2.6.1" }
 
     @{ ModuleName = "EzTheme"; ModuleVersion = "0.1.0" }
     @{ ModuleName = "Theme.PowerShell"; ModuleVersion = "0.1.0" }

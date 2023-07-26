@@ -80,88 +80,82 @@ $global:GitPromptSettings.AfterStash.Text = "$(Text '&Separator;')"
 # https://gitlab.freedesktop.org/Per_Bothner/specifications/blob/master/proposals/semantic-prompts.md
 # https://code.visualstudio.com/docs/terminal/shell-integration#_manual-installation
 # https://wezfurlong.org/wezterm/shell-integration.html
-function global:Enable-ShellIntegration {
-    [CmdletBinding()]
-    param(
-        [switch]$IsVsCode = $IsVSCode
-    )
 
-    if ($IsVSCode) {
-        [Console]::Write("$([char]0x1b)]633;P;IsWindows=$($IsWindows)`a")
-    }
-    function global:PSConsoleHostReadLine {
-        # End of prompt and start of user input
-        # OSC 133 ; B ST
-        [Console]::Write("$([char]0x1b)]133;B`a")
-        $command = PSReadLine\PSConsoleHostReadLine
-        # Explicitly set the command line (VSCODE only)
-        # OSC 633 ; E [; <CommandLine>] ST
-        # [Console]::Write("$([char]0x1b)]633;E;$($command.Replace("\", "\\").Replace("`n", "\x0a").Replace(";", "\x3b"))`a")
-        # End of input, and start of output.
-        # OSC 133 ; C ST
-        [Console]::Write("$([char]0x1b)]633;C`a")
-        $command
-    }
+function global:PSConsoleHostReadLine {
+    # End of prompt and start of user input
+    # OSC 133 ; B ST
+    [Console]::Write("$([char]0x1b)]133;B`a")
+    $command = PSReadLine\PSConsoleHostReadLine
+    # End of input, and start of output.
+    # OSC 133 ; C ST
+    [Console]::Write("$([char]0x1b)]133;C`a")
+    $command
+}
 
-    # This doesn't need to run if $MyInvocation.HistoryId hasn't changed...
-    Add-PowerLineBlock -Index 0 @{
-        MyInvocation = "Write-CommandEnd"
-        Caps         = ""
-        Content      = {
-            @(
-                if (($MyInvocation.HistoryId -gt 1) -and ($global:LastHistoryId -ne ($global:LastHistoryId = $MyInvocation.HistoryId))) {
-                    if ($IsVSCode) {
-                        # Add command-line to history
-                        # OSC 133 ; E [; <CommandLine>] ST
-                        "$([char]0x1b)]633;E;$((Get-History -Id ($MyInvocation.HistoryId -1) -ErrorAction Ignore).CommandLine.Replace("\", "\\").Replace("`n", "\x0a").Replace(";", "\x3b"))`a"
-                    }
-                    # Command finished exit code
+Add-PowerLineBlock -Index 0 ([PoshCode.TerminalBlock]@{
+    MyInvocation = "Write-FTSI"
+    Caps         = ""
+    Content      = {
+        @(
+            # This doesn't need to run if $MyInvocation.HistoryId hasn't changed...
+            if ($MyInvocation.HistoryId -gt 1) {
+                if ($global:LastHistoryId -ne ($global:LastHistoryId = $MyInvocation.HistoryId)) {
+                    # Command finished. Exit code only cares if it's zero or not.
                     # OSC 133 ; D [; <ExitCode>] ST
-                    "$([char]0x1b)]633;D;$([int]![PoshCode.TerminalBlock]::LastSuccess)`a"
-                    # OSC 7; Update the working directory
-                    "$([char]0x1b)]7;file://${env:COMPUTERNAME}/$($ExecutionContext.SessionState.Path.CurrentFileSystemLocation)`a"
+                    "$([char]0x1b)]133;D;$([int]![PoshCode.TerminalBlock]::LastSuccess)`a"
+                } else {
+                    "$([char]0x1b)]133;D;0`a"
                 }
-            ) -join ""
-        }
-    }
+            }
 
-    # Prompt started
-    # OSC 133 ; A ST
-    Add-PowerLineBlock -Index 1 @{
-        MyInvocation = "Write-PromptStart"
-        Content      = {
             # Prompt started
             # OSC 633 ; A ST
-            "$([char]0x1b)]633;A`a"
-            if ($IsVSCode) {
-                # Current working directory
-                # OSC 633 ; P ; <Property>=<Value> ST
-                "$([char]0x1b)]633;P;Cwd=$($ExecutionContext.SessionState.Path.CurrentFileSystemLocation)`a"
-            }
-        }
+            "$([char]0x1b)]133;A`a"
+
+            # Update current working directory
+            # OSC 7; file://<hostname>/<path> ST
+            "$([char]0x1b)]7;file://${env:COMPUTERNAME}/$($ExecutionContext.SessionState.Path.CurrentFileSystemLocation)`a"
+        ) -join ""
+    }
+})
+
+if ($IsVSCode) {
+    # Stop VSCode from screwing with my prompt
+    $global:__VSCodeOriginalPrompt = { Write-PowerlinePrompt }
+    Add-PowerLineBlock -Index 0 ([PoshCode.TerminalBlock]@{
+        MyInvocation = "Update-VSCodeHistory"
         Caps         = ""
-    }
-
-    if ($IsVSCode) {
-        # Set IsWindows property
-        [Console]::Write("$([char]0x1b)]633;P;IsWindows=$($IsWindows)`a")
-
-        # Remap key handlers to the VS Code keybindings
-        function Copy-PSReadlineKeyHandler {
-            param ([string[]]$Current, [string[]]$Replacement)
-            if ($Handler = Get-PSReadLineKeyHandler -Chord $Current | Select-Object -First 1) {
-                Set-PSReadLineKeyHandler -Chord $Replacement -Function $Handler.Function
+        Content      = {
+            if (($MyInvocation.HistoryId -gt 1) -and ($global:LastHistoryId -ne ($global:LastHistoryId = $MyInvocation.HistoryId))) {
+                # Add command-line to history
+                # OSC 633 ; E [; <CommandLine>] ST
+                "$([char]0x1b)]633;E;$((Get-History -Id ($MyInvocation.HistoryId -1) -ErrorAction Ignore).CommandLine.Replace("\", "\\").Replace("`n", "\x0a").Replace(";", "\x3b"))`a"
             }
         }
-        Copy-PSReadlineKeyHandler 'Ctrl+Spacebar' 'F12,a'
-        Copy-PSReadlineKeyHandler 'Alt+Spacebar' 'F12,b'
-        Copy-PSReadlineKeyHandler 'Shift+Enter' 'F12,c'
-        Copy-PSReadlineKeyHandler 'Shift+End' 'F12,d'
+    })
+    # Set IsWindows property
+    [Console]::Write("$([char]0x1b)]633;P;IsWindows=$($IsWindows)`a")
+
+    # Remap key handlers to the VSCode compatible keybindings
+    function Copy-PSReadlineKeyHandler {
+        param ([string[]]$OldChord, [string[]]$NewChord)
+        try {
+            $Handler = Get-PSReadLineKeyHandler -Chord $OldChord | Select-Object -First 1
+        } catch [System.Management.Automation.ParameterBindingException] {
+            # PowerShell 5.1 ships with PSReadLine 2.0.0 which does not have -Chord,
+            # so we check what's bound and filter it.
+            $Handler = Get-PSReadLineKeyHandler -Bound | Where-Object -FilterScript { $_.Key -eq $OldChord } | Select-Object -First 1
+        }
+        if ($Handler) {
+            Set-PSReadLineKeyHandler -Chord $NewChord -Function $Handler.Function
+        }
     }
+    Copy-PSReadlineKeyHandler 'Ctrl+Spacebar' 'F12,a'
+    Copy-PSReadlineKeyHandler 'Alt+Spacebar' 'F12,b'
+    Copy-PSReadlineKeyHandler 'Shift+Enter' 'F12,c'
+    Copy-PSReadlineKeyHandler 'Shift+End' 'F12,d'
 }
-if ($ENV:TERM_PROGRAM -in "vscode", "WezTerm") {
-    Enable-ShellIntegration
-}
+
 
 # Write-Host "Setting PSReadLine Options."
 Set-PSReadLineOption -HistoryNoDuplicates:$false -MaximumHistoryCount 8kb -EditMode Windows -PredictionViewStyle ListView
@@ -537,7 +531,6 @@ $PSDefaultParameterValues["*:DeuteriumPath"] = "$deut"
 
 # The PowerShell Extension host is slightly different:
 if ($IsVSCode -and $Host.Name -eq "Visual Studio Code Host") {
-    # Write-Host "Detected VS Code"
     # This module and command are only useable in the "PowerShell Integrated Console" in VS Code
     Import-Module EditorServicesCommandSuite
     Import-EditorCommand -Module EditorServicesCommandSuite
