@@ -7,7 +7,7 @@ param(
     $PathFile = [IO.Path]::ChangeExtension($Profile, ".Path.env"),
 
     # Root for "this" version of PowerShell
-    $ProfileDir = [IO.Path]::GetDirectoryName($Profile.CurrentUserAllHosts),
+    $ProfileDir = [IO.Path]::GetDirectoryName($Profile),
 
     # Determine whether the provider is case insensitive (calculated automatically)
     [switch]$CaseInsensitive = $($false -notin (Test-Path $ProfileDir.ToLowerInvariant(), $ProfileDir.ToUpperInvariant()))
