@@ -42,7 +42,7 @@
     ],
     "copyFormatting": "all",
     "copyOnSelect": false,
-    "defaultProfile": "{{ if eq .shell "PowerShell"}}{574e775e-4f2a-5b96-ac1e-a2962a402336}{{else}}{61c54bbd-c2c6-5271-96e7-009a87ff44bf}{{end}}",
+    "defaultProfile": "{a3a2e83a-884a-5379-baa8-16f193a13b21}",
     "profiles": {
         "defaults": {
             "backgroundImage": "ms-appdata:///local/photo-1651870364199-fc5f9f46ac85.avif",
@@ -55,11 +55,13 @@
             "experimental.showMarksOnScrollbar": true,
             "font": {
                 "face": "CaskaydiaCove NFM",
+                "weight": "medium",
                 "size": 12
             },
+            "padding": "4",
             "opacity": 70,
-            "padding": "0, 0, 0, 0",
-            "useAcrylic": true
+            "useAcrylic": true,
+            "scrollbarState": "hidden"
         },
         "list": [
             {
@@ -86,7 +88,10 @@
                 "backgroundImage": "ms-appdata:///local/Powershell_av256.png",
                 "backgroundImageStretchMode": "none",
                 "icon": "ms-appx:///ProfileIcons/pwsh-preview.png",
-                "hidden": false
+                "hidden": false,
+                "environment": {
+                    "POWERSHELL_UPDATECHECK": "Default"
+                }
             },
             {
                 "name": "PS7 Preview -NoProfile",
@@ -95,7 +100,10 @@
                 "backgroundImage": "ms-appdata:///local/Powershell_av256.png",
                 "backgroundImageStretchMode": "none",
                 "icon": "ms-appx:///ProfileIcons/pwsh-preview.png",
-                "startingDirectory": "%USERPROFILE%"
+                "startingDirectory": "%USERPROFILE%",
+                "environment": {
+                    "POWERSHELL_UPDATECHECK": "Default"
+                }
             },
             {
                 "name": "Command Prompt",
@@ -118,6 +126,11 @@
                 "backgroundImageStretchMode": "none",
                 "icon": "ms-appx:///ProfileIcons/pwsh.png",
                 "hidden": false
+                {{- if eq .chezmoi.username "LD\\joelbennett" -}},
+                "environment": {
+                    "POWERSHELL_UPDATECHECK": "LTS"
+                }
+                {{- end }}
             },
             {
                 "name": "PwSh -NoProfile",
@@ -127,6 +140,11 @@
                 "backgroundImageStretchMode": "none",
                 "icon": "ms-appx:///ProfileIcons/pwsh.png",
                 "startingDirectory": "%USERPROFILE%"
+                {{- if eq .chezmoi.username "LD\\joelbennett" -}},
+                "environment": {
+                    "POWERSHELL_UPDATECHECK": "LTS"
+                }
+                {{- end }}
             },
             {
                 "name": "Ubuntu 20.04",
@@ -154,7 +172,7 @@
                 "backgroundImageStretchMode": "none",
                 "hidden": false
             }
-            {{ end -}}
+            {{- end }}
         ]
     },
     "schemes": [
