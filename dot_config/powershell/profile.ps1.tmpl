@@ -50,6 +50,7 @@ if ($Host.UI.RawUI.KeyAvailable) {
 # PART 3. Things we only need in interactive sessions
 #   For performance reasons, I don't want to do all of this work when I'm running automated scripts
 function prompt {
+    Write-Host "Preparing interactive session for first use..." -ForegroundColor Cyan
     & "$Home/.config/powershell/scripts/Initialize-Interactive.ps1"
     # $InformationPreference = "SilentlyContinue"
 }

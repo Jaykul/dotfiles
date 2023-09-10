@@ -46,7 +46,7 @@ try {
         try {
             Import-Module -FullyQualifiedName $Module -Scope Global -ErrorAction Stop
         } catch {
-            Write-Warning "Failed to import $($Module.ModuleName) module."
+            Write-Warning "Failed to import $($Module.ModuleName) module version $($Module.ModuleVersion) or higher.`n$($_ | Get-Error)."
         }
     }
 }
