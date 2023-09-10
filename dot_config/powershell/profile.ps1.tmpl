@@ -28,6 +28,7 @@ $LDDeut     = $deut     = "$ldx\Deuterium"
 $LDChamber  = $chamber  = "$deut\chamber"
 {{ end -}}
 
+$Interactive = Convert-Path "$Home/.config/powershell/scripts/Initialize-Interactive.ps1"
 
 if ($Host.UI.RawUI.KeyAvailable) {
     $Controlled = $false
@@ -37,7 +38,7 @@ if ($Host.UI.RawUI.KeyAvailable) {
         }
     }
     if ($Controlled) {
-        Write-Host "Skipping Interactive Config. To complete, run:`n. $PSScriptRoot/scripts/Initialize-Interactive.ps1" -ForegroundColor Yellow
+        Write-Host "Skipping Interactive Config. To complete, run:`n. `"$Interactive`"" -ForegroundColor Yellow
         if ($PSVersionTable.PSVersion.Major -gt 5) {
             function prompt { "`e[36m$($MyInvocation.HistoryId)`e[37m $pwd`e[0m`n❯" }
         } else {
@@ -51,6 +52,6 @@ if ($Host.UI.RawUI.KeyAvailable) {
 #   For performance reasons, I don't want to do all of this work when I'm running automated scripts
 function prompt {
     Write-Host "Preparing interactive session for first use..." -ForegroundColor Cyan
-    & "$PSScriptRoot/scripts/Initialize-Interactive.ps1"
+    . $Interactive
     # $InformationPreference = "SilentlyContinue"
 }
