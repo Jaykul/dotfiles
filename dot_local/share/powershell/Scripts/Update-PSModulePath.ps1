@@ -81,6 +81,7 @@ function Select-UniquePath {
                 # Use Get-Item -Force to ensure we don't loose hidden folders
                 Get-Item -Force |
                 # But make sure we didn't add anything that wasn't already there
+                # ! This makes us sensitive to the \ vs / in paths
                 Where-Object { $_.FullName -iin $inputPaths } |
                 ForEach-Object FullName
         } else {
@@ -118,14 +119,6 @@ function Select-UniquePath {
 # 3. I don't worry about missing paths, because `Select-UniquePath` takes care of it
 # 4. I don't worry about x86 because I never use it.
 
-# On Linux, the XDG standard says use the variable and calculate a fallback
-$DataHome = if ($ENV:XDG_DATA_HOME) {
-    $ENV:XDG_DATA_HOME
-# } elseif ($Env:LOCALAPPDATA) {
-#     $Env:LOCALAPPDATA
-} else {
-    [IO.Path]::Combine($HOME, ".local", "share")
-}
 
 # Before paths that are next to my $profile, I want a path that's outside of my documents folder, and thus, outside OneDrive
 @("$DataHome\powershell\Modules"
@@ -176,6 +169,6 @@ $(if (!$IsMacOS -and !$IsLinux) {
 ) +
 @("$DataHome\powershell\Scripts") +
 @([IO.Path]::Combine($ProfileDir, "Scripts")) +
-@(Get-ChildItem ([IO.Path]::Combine([IO.Path]::GetDirectoryName($ProfileDir), "*PowerShell\*")) -Filter Scripts -Directory).FullName +
+# Finally, to avoid duplicates and ensure canonical path case, pass it all through Select-UniquePath, set ENV and cache it on disc
 # Finally, to avoid duplicates and ensure canonical path case, pass it all through Select-UniquePath, set ENV and cache it on disc
 @() | Select-UniquePath -OutPathName Env:Path -OutPathNameAsArray $PathFile -CaseInsensitive:$CaseInsensitive -RemoveNonExistent

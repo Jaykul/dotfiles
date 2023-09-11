@@ -1,6 +1,6 @@
 #!/usr/bin/env pwsh
 # This script needs to install modules whenever I change the Initialize-Interactive script
-# profile hash: {{ include "dot_config/powershell/scripts/Initialize-Interactive.ps1.tmpl" | sha256sum }}
+# profile hash: {{ include "dot_local/share/powershell/Scripts/Initialize-Interactive.ps1.tmpl" | sha256sum }}
 $ErrorView = 'DetailedView'
 Get-Module -FullyQualifiedName @{ ModuleName = "PowerShellGet"; ModuleVersion = "3.0.17" } -List -OutVariable PowerShellGet | Out-Host
 

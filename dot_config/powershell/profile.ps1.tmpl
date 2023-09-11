@@ -3,8 +3,21 @@ trap { Write-Warning ($_.ScriptStackTrace | Out-String) }
 # I wish $Profile was in $Home, but since it's not:
 $ProfileDir = $PSScriptRoot
 
+# The XDG standard says use the variable and tells us how to calculate a fallback
+$DataHome = if ($ENV:XDG_CONFIG_HOME) {
+    $ENV:XDG_DATA_HOME
+} else {
+    [IO.Path]::Combine($HOME, ".local", "share")
+}
+$ConfigHome = if ($ENV:XDG_CONFIG_HOME) {
+    $ENV:XDG_CONFIG_HOME
+} else {
+    [IO.Path]::Combine($HOME, ".config")
+}
+
+
 # I can run `Update-PSModulePath` any time, but I don't by default
-Set-Alias Update-PSModulePath $Home/.config/powershell/scripts/Update-PSModulePath.ps1
+Set-Alias Update-PSModulePath $DataHome/powershell/Scripts/Update-PSModulePath.ps1
 # I just read the cached values from the last run
 if (Test-Path ($PSModulePathPath = [IO.Path]::ChangeExtension($Profile, ".PSModulePath.env"))) {
     $Env:PSModulePath_Before = $Env:PSModulePath
@@ -28,7 +41,7 @@ $LDDeut     = $deut     = "$ldx\Deuterium"
 $LDChamber  = $chamber  = "$deut\chamber"
 {{ end -}}
 
-$Interactive = Convert-Path "$Home/.config/powershell/scripts/Initialize-Interactive.ps1"
+$Interactive = Convert-Path "$DataHome/powershell/Scripts/Initialize-Interactive.ps1"
 
 if ($Host.UI.RawUI.KeyAvailable) {
     $Controlled = $false
