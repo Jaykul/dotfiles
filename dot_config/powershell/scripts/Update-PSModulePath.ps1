@@ -143,7 +143,7 @@ $DataHome = if ($ENV:XDG_DATA_HOME) {
         [System.Environment]::GetEnvironmentVariable("PSMODULEPATH", "User")
     }
 ) +
-@("$Home/.config/powershell/[Mm]modules") +
+@("$Home/.config/powershell/Modules") +
 
 # If we're on Windows, just to make sure we don't miss anything
 # Add the Module paths for other PowerShell versions down here
@@ -177,7 +177,7 @@ $(if (!$IsMacOS -and !$IsLinux) {
 ) +
 @("$DataHome/powershell/Scripts") +
 @([IO.Path]::Combine($ProfileDir, "Scripts")) +
-@("$Home/.config/powershell/[Ss]cripts") +
+@("$Home/.config/powershell/Scripts") +
 @(Get-ChildItem ([IO.Path]::Combine([IO.Path]::GetDirectoryName($ProfileDir), "*PowerShell\*")) -Filter Scripts -Directory).FullName +
 # Finally, to avoid duplicates and ensure canonical path case, pass it all through Select-UniquePath, set ENV and cache it on disc
 @() | Select-UniquePath -OutPathName Env:Path -OutPathNameAsArray $PathFile -CaseInsensitive:$CaseInsensitive -RemoveNonExistent
