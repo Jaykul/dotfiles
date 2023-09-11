@@ -67,13 +67,14 @@
             {
                 "name": "Windows PowerShell",
                 "guid": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
+                "commandline": "%SystemRoot%\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
                 "backgroundImage": "ms-appdata:///local/Powershell_blue256.png",
                 "backgroundImageStretchMode": "none",
                 "icon": "ms-appdata:///local/PowerShell_blue.png",
                 "hidden": false
             },
             {
-                "name": "PowerShell -NoProfile",
+                "name": "Windows PowerShell -NoProfile",
                 "guid": "{54659ce2-8d1f-40dd-b671-533b9d1635bc}",
                 "backgroundImage": "ms-appdata:///local/Powershell_blue256.png",
                 "backgroundImageStretchMode": "none",
@@ -82,9 +83,9 @@
                 "startingDirectory": "%USERPROFILE%"
             },
             {
-                "name": "PS7 Preview",
-                "source": "Windows.Terminal.PowershellCore",
+                "name": "PowerShell 7 Preview",
                 "guid": "{a3a2e83a-884a-5379-baa8-16f193a13b21}",
+                "source": "Windows.Terminal.PowershellCore",
                 "backgroundImage": "ms-appdata:///local/Powershell_av256.png",
                 "backgroundImageStretchMode": "none",
                 "icon": "ms-appx:///ProfileIcons/pwsh-preview.png",
@@ -94,9 +95,8 @@
                 }
             },
             {
-                "name": "PS7 Preview -NoProfile",
-                "commandline": "pwsh.exe -NoProfile",
-                "guid": "{8340ed4a-61a8-4ea0-b524-c33fa2e861e2}",
+                "name": "PowerShell 7 Preview -NoProfile",
+                "commandline": "%ProgramFiles%\\PowerShell\\7-preview\\pwsh.exe -NoProfile",
                 "backgroundImage": "ms-appdata:///local/Powershell_av256.png",
                 "backgroundImageStretchMode": "none",
                 "icon": "ms-appx:///ProfileIcons/pwsh-preview.png",
@@ -106,6 +106,7 @@
                 }
             },
             {
+                "commandline": "%SystemRoot%\\System32\\cmd.exe",
                 "name": "Command Prompt",
                 "guid": "{0caa0dad-35be-5f56-a8ff-afceeeaa6101}",
                 "hidden": false
@@ -119,7 +120,7 @@
                 "hidden": false
             },
             {
-                "name": "PwSh",
+                "name": "PowerShell",
                 "source": "Windows.Terminal.PowershellCore",
                 "guid": "{574e775e-4f2a-5b96-ac1e-a2962a402336}",
                 "backgroundImage": "ms-appdata:///local/Powershell_black256.png",
@@ -133,9 +134,8 @@
                 {{- end }}
             },
             {
-                "name": "PwSh -NoProfile",
+                "name": "PowerShell -NoProfile",
                 "commandline": "pwsh.exe -NoProfile",
-                "guid": "{e48db962-18af-4eec-af6a-f77175ef3a71}",
                 "backgroundImage": "ms-appdata:///local/Powershell_black256.png",
                 "backgroundImageStretchMode": "none",
                 "icon": "ms-appx:///ProfileIcons/pwsh.png",
@@ -146,27 +146,25 @@
                 }
                 {{- end }}
             },
-            {
-                "name": "Ubuntu 20.04",
+            {   // This doesn't work if the Canonical one does
+                "name": "Ubuntu",
                 "source": "Windows.Terminal.Wsl",
-                "guid": "{07b52e3e-de2c-5db4-bd2d-ba144ed6c273}",
+                "guid": "{2c4de342-38b7-51cf-b940-2309a097f518}",
                 "icon": "ms-appdata:///local/Ubuntu.png",
                 "backgroundImage": "ms-appdata:///local/Ubuntu_256.png",
                 "backgroundImageStretchMode": "none",
                 "hidden": false
             },
-            {{ if eq .chezmoi.username "ZEN\\Jaykul" -}}
+            {{ if eq .chezmoi.username "ZENTOO\\Jaykul" -}}
             {
                 "name": "Matrix (SSH)",
                 "tabTitle": "Matrix",
                 "commandline": "ssh azureuser@matrix.poshcode.org",
-                "guid": "{3fa75d59-8c42-4107-b958-58118f2c2f5c}",
                 "icon": "ms-appdata:///local/matrix.png"
             },
             {
                 "name": "Minecraft (SSH)",
                 "commandline": "ssh huddledminers.eastus.cloudapp.azure.com",
-                "guid": "{9688bbef-7465-4a9a-a902-75b3f108b2c9}",
                 "icon": "ms-appdata:///local/Minecraft.ico",
                 "backgroundImage": "ms-appdata:///local/Minecraft_256.png",
                 "backgroundImageStretchMode": "none",
