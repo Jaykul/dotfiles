@@ -124,11 +124,11 @@ $DataHome = if ($ENV:XDG_DATA_HOME) {
 # } elseif ($Env:LOCALAPPDATA) {
 #     $Env:LOCALAPPDATA
 } else {
-    [IO.Path]::Combine($ENV:HOME, ".local", "share")
+    [IO.Path]::Combine($HOME, ".local", "share")
 }
 
 # Before paths that are next to my $profile, I want a path that's outside of my documents folder, and thus, outside OneDrive
-@("$DataHome/powershell/Modules"
+@("$DataHome\powershell\Modules"
 # Then, the normal location next my $profile:
 [IO.Path]::Combine($ProfileDir, "Modules")
 # Finally, this version's PSHome
@@ -143,7 +143,6 @@ $DataHome = if ($ENV:XDG_DATA_HOME) {
         [System.Environment]::GetEnvironmentVariable("PSMODULEPATH", "User")
     }
 ) +
-@("$Home/.config/powershell/Modules") +
 
 # If we're on Windows, just to make sure we don't miss anything
 # Add the Module paths for other PowerShell versions down here
@@ -175,9 +174,8 @@ $(if (!$IsMacOS -and !$IsLinux) {
         [System.Environment]::GetEnvironmentVariable("PATH", "User")
     }
 ) +
-@("$DataHome/powershell/Scripts") +
+@("$DataHome\powershell\Scripts") +
 @([IO.Path]::Combine($ProfileDir, "Scripts")) +
-@("$Home/.config/powershell/Scripts") +
 @(Get-ChildItem ([IO.Path]::Combine([IO.Path]::GetDirectoryName($ProfileDir), "*PowerShell\*")) -Filter Scripts -Directory).FullName +
 # Finally, to avoid duplicates and ensure canonical path case, pass it all through Select-UniquePath, set ENV and cache it on disc
 @() | Select-UniquePath -OutPathName Env:Path -OutPathNameAsArray $PathFile -CaseInsensitive:$CaseInsensitive -RemoveNonExistent
