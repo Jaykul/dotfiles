@@ -92,70 +92,73 @@ function global:PSConsoleHostReadLine {
     $command
 }
 
-Add-PowerLineBlock -Index 0 ([PoshCode.TerminalBlock]@{
-    MyInvocation = " " # this is a trick to make sure it doesn't export :)
-    Caps         = ""
-    Content      = {
-        @(
-            # This doesn't need to run if $MyInvocation.HistoryId hasn't changed...
-            if ($MyInvocation.HistoryId -gt 1) {
-                if ($global:LastHistoryId -ne ($global:LastHistoryId = $MyInvocation.HistoryId)) {
-                    # Command finished. Exit code only cares if it's zero or not.
-                    # OSC 133 ; D [; <ExitCode>] ST
-                    "$([char]0x1b)]133;D;$([int]![PoshCode.TerminalBlock]::LastSuccess)`a"
-                } else {
-                    "$([char]0x1b)]133;D;0`a"
-                }
-            }
-
-            # Prompt started
-            # OSC 633 ; A ST
-            "$([char]0x1b)]133;A`a"
-
-            # Update current working directory
-            # OSC 7; file://<hostname>/<path> ST
-            "$([char]0x1b)]7;file://${env:COMPUTERNAME}/$($ExecutionContext.SessionState.Path.CurrentFileSystemLocation)`a"
-        ) -join ""
-    }
-})
-
-if ($IsVSCode) {
-    # Stop VSCode from screwing with my prompt
-    $global:__VSCodeOriginalPrompt = { Write-PowerlinePrompt }
+try {
     Add-PowerLineBlock -Index 0 ([PoshCode.TerminalBlock]@{
-        MyInvocation = "Update-VSCodeHistory"
+        MyInvocation = " " # this is a trick to make sure it doesn't export :)
         Caps         = ""
         Content      = {
-            if (($MyInvocation.HistoryId -gt 1) -and ($global:LastHistoryId -ne ($global:LastHistoryId = $MyInvocation.HistoryId))) {
-                # Add command-line to history
-                # OSC 633 ; E [; <CommandLine>] ST
-                "$([char]0x1b)]633;E;$((Get-History -Id ($MyInvocation.HistoryId -1) -ErrorAction Ignore).CommandLine.Replace("\", "\\").Replace("`n", "\x0a").Replace(";", "\x3b"))`a"
-            }
+            @(
+                # This doesn't need to run if $MyInvocation.HistoryId hasn't changed...
+                if ($MyInvocation.HistoryId -gt 1) {
+                    if ($global:LastHistoryId -ne ($global:LastHistoryId = $MyInvocation.HistoryId)) {
+                        # Command finished. Exit code only cares if it's zero or not.
+                        # OSC 133 ; D [; <ExitCode>] ST
+                        "$([char]0x1b)]133;D;$([int]![PoshCode.TerminalBlock]::LastSuccess)`a"
+                    } else {
+                        "$([char]0x1b)]133;D;0`a"
+                    }
+                }
+
+                # Prompt started
+                # OSC 633 ; A ST
+                "$([char]0x1b)]133;A`a"
+
+                # Update current working directory
+                # OSC 7; file://<hostname>/<path> ST
+                "$([char]0x1b)]7;file://${env:COMPUTERNAME}/$($ExecutionContext.SessionState.Path.CurrentFileSystemLocation)`a"
+            ) -join ""
         }
     })
-    # Set IsWindows property
-    [Console]::Write("$([char]0x1b)]633;P;IsWindows=$($IsWindows)`a")
 
-    # Remap key handlers to the VSCode compatible keybindings
-    function Copy-PSReadlineKeyHandler {
-        param ([string[]]$OldChord, [string[]]$NewChord)
-        try {
-            $Handler = Get-PSReadLineKeyHandler -Chord $OldChord | Select-Object -First 1
-        } catch [System.Management.Automation.ParameterBindingException] {
-            # PowerShell 5.1 ships with PSReadLine 2.0.0 which does not have -Chord,
-            # so we check what's bound and filter it.
-            $Handler = Get-PSReadLineKeyHandler -Bound | Where-Object -FilterScript { $_.Key -eq $OldChord } | Select-Object -First 1
+    if ($IsVSCode) {
+        # Stop VSCode from screwing with my prompt
+        $global:__VSCodeOriginalPrompt = { Write-PowerlinePrompt }
+        Add-PowerLineBlock -Index 0 ([PoshCode.TerminalBlock]@{
+            MyInvocation = " " # this is a trick to make sure it doesn't export :)
+            Caps         = ""
+            Content      = {
+                if (($MyInvocation.HistoryId -gt 1) -and ($global:LastHistoryId -ne ($global:LastHistoryId = $MyInvocation.HistoryId))) {
+                    # Add command-line to history
+                    # OSC 633 ; E [; <CommandLine>] ST
+                    "$([char]0x1b)]633;E;$((Get-History -Id ($MyInvocation.HistoryId -1) -ErrorAction Ignore).CommandLine.Replace("\", "\\").Replace("`n", "\x0a").Replace(";", "\x3b"))`a"
+                }
+            }
+        })
+        # Set IsWindows property
+        [Console]::Write("$([char]0x1b)]633;P;IsWindows=$($IsWindows)`a")
+
+        # Remap key handlers to the VSCode compatible keybindings
+        function Copy-PSReadlineKeyHandler {
+            param ([string[]]$OldChord, [string[]]$NewChord)
+            try {
+                $Handler = Get-PSReadLineKeyHandler -Chord $OldChord | Select-Object -First 1
+            } catch [System.Management.Automation.ParameterBindingException] {
+                # PowerShell 5.1 ships with PSReadLine 2.0.0 which does not have -Chord,
+                # so we check what's bound and filter it.
+                $Handler = Get-PSReadLineKeyHandler -Bound | Where-Object -FilterScript { $_.Key -eq $OldChord } | Select-Object -First 1
+            }
+            if ($Handler) {
+                Set-PSReadLineKeyHandler -Chord $NewChord -Function $Handler.Function
+            }
         }
-        if ($Handler) {
-            Set-PSReadLineKeyHandler -Chord $NewChord -Function $Handler.Function
-        }
+        Copy-PSReadlineKeyHandler 'Ctrl+Spacebar' 'F12,a'
+        Copy-PSReadlineKeyHandler 'Alt+Spacebar' 'F12,b'
+        Copy-PSReadlineKeyHandler 'Shift+Enter' 'F12,c'
+        Copy-PSReadlineKeyHandler 'Shift+End' 'F12,d'
     }
-    Copy-PSReadlineKeyHandler 'Ctrl+Spacebar' 'F12,a'
-    Copy-PSReadlineKeyHandler 'Alt+Spacebar' 'F12,b'
-    Copy-PSReadlineKeyHandler 'Shift+Enter' 'F12,c'
-    Copy-PSReadlineKeyHandler 'Shift+End' 'F12,d'
+} catch {
+    Write-Warning "Failed to add terminal blocks to prompt."
 }
-
 
 # Write-Host "Setting PSReadLine Options."
 Set-PSReadLineOption -HistoryNoDuplicates:$false -MaximumHistoryCount 8kb -EditMode Windows -PredictionViewStyle ListView
