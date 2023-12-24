@@ -200,12 +200,12 @@ Set-PSReadLineKeyHandler -Key Alt+w {
     [ReadLine]::RevertLine()
 } -Description "Save current line in history but do not execute"
 
-Set-PSReadLineKeyHandler '(', '{', '[', '"', "'" {
+Set-PSReadLineKeyHandler '(', '{', '"', "'" {
     param($key, $arg)
 
     $closeChar = switch ($key.KeyChar) {
         '(' { [char]')'; break }
-        '{' { [char]'}'; break }
+        # '{' { [char]'}'; break }
         '[' { [char]']'; break }
         '"' { [char]'"'; break }
         "'" { [char]"'"; break }
@@ -238,7 +238,7 @@ Set-PSReadLineKeyHandler '(', '{', '[', '"', "'" {
     }
 } -Description "Insert matching braces and quotes"
 
-Set-PSReadLineKeyHandler ')', ']', '}', '"', "'" {
+Set-PSReadLineKeyHandler ')', '}', '"', "'" {
     param($key, $arg)
 
     $command = $null
@@ -265,7 +265,6 @@ Set-PSReadLineKeyHandler ')', ']', '}', '"', "'" {
             [ReadLine]::SetCursorPosition($command.length + 2)
         }
     }
-
 } -Description "Insert or skip closing brace or wrap!"
 
 Set-PSReadLineKeyHandler Backspace {
@@ -332,7 +331,7 @@ Set-PSReadLineKeyHandler "Alt+]" {
             [ReadLine]::SelectLine()
         }
     }
-}
+} -Description "Indent selected lines"
 
 Set-PSReadLineKeyHandler "Alt+[" {
     param($key, $arg)
@@ -372,7 +371,7 @@ Set-PSReadLineKeyHandler "Alt+[" {
             [ReadLine]::SelectLine()
         }
     }
-}
+} -Description "Unindent selected lines"
 
 # Cycle through arguments on current line and select the text. This makes it easier to quickly change the argument if re-running a previously run command from the history
 # or if using a psreadline predictor. You can also use a digit argument to specify which argument you want to select, i.e. Alt+1, Alt+a selects the first argument
@@ -474,6 +473,28 @@ Set-PSReadLineKeyHandler -Key "Alt+j" {
     [ReadLine]::SetMark($null, $null)
     [ReadLine]::SelectForwardChar($null, ($nextAst.Extent.EndOffset - $nextAst.Extent.StartOffset) - $endOffsetAdjustment)
 } -Description "Select next argument in the command line (or use a digit to select by index)"
+
+
+<#
+Set-PSReadLineKeyHandler -Chord 'F12,b' {
+    $commandLine = ""
+    $cursorIndex = 0
+    [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$commandLine, [ref]$cursorIndex)
+    $completionPrefix = $commandLine
+
+    $result = "`e]633;Completions"
+    if ($completionPrefix.Length -gt 0) {
+        $completions = TabExpansion2 -inputScript $completionPrefix -cursorColumn $cursorIndex
+        if ($null -ne $completions.CompletionMatches) {
+            $result += ";$($completions.ReplacementIndex);$($completions.ReplacementLength);$($cursorIndex);"
+            $result += $completions.CompletionMatches | ConvertTo-Json -Compress
+        }
+    }
+    $result += "`a"
+
+    Write-Host -NoNewLine $result
+} -Description "Send completions to terminal"
+#>
 
 # Write-Host "Write PowerLine Prompt"
 # Now that we've imported PowerLine and configured Posh-Git we can call the NEW prompt function:

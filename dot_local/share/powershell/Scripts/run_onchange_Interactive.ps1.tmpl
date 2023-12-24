@@ -17,9 +17,17 @@ if (!$PSResourceGet) {
 }
 {{ template "DefaultModules.ps1" . }}
 
-$RequiredModules = @{}
+$RequiredModules = @{
+    "Microsoft.PowerShell.PSResourceGet" = "[1.0.1, 2.0)"
+}
 $DefaultModules | ForEach-Object {
     $RequiredModules[$_.ModuleName] = if ($_.ModuleVersion) { "[$($_.ModuleVersion),)" } else { "[$($_.RequiredVersion)]" }
 }
 Write-Warning "Pre-installing $($RequiredModules.Count) modules: $($RequiredModules.Keys -join ', ')"
-Install-PSResource -RequiredResource $RequiredModules -Scope CurrentUser
+Install-Script -Name Install-RequiredModule -Scope CurrentUser -Force -PassThru
+Install-Script -Name Install-GithubRelease -Scope CurrentUser -Force -PassThru
+# https://github.com/PowerShell/PSResourceGet/issues/1448
+Install-RequiredModule $RequiredModules -Scope CurrentUser
+
+Install-GithubRelease rsteube carapace-bin
+
