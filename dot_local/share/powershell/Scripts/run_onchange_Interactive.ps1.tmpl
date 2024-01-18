@@ -27,7 +27,7 @@ Write-Warning "Pre-installing $($RequiredModules.Count) modules: $($RequiredModu
 Install-Script -Name Install-RequiredModule -Scope CurrentUser -Force -PassThru
 Install-Script -Name Install-GithubRelease -Scope CurrentUser -Force -PassThru
 # https://github.com/PowerShell/PSResourceGet/issues/1448
-Install-RequiredModule $RequiredModules -Scope CurrentUser
+Install-RequiredModule $RequiredModules -Scope CurrentUser -TrustRegisteredRepositories
 
 Install-GithubRelease rsteube carapace-bin
 
