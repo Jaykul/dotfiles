@@ -24,10 +24,11 @@ $DefaultModules | ForEach-Object {
     $RequiredModules[$_.ModuleName] = if ($_.ModuleVersion) { "[$($_.ModuleVersion),)" } else { "[$($_.RequiredVersion)]" }
 }
 Write-Warning "Pre-installing $($RequiredModules.Count) modules: $($RequiredModules.Keys -join ', ')"
-Install-Script -Name Install-RequiredModule -Scope CurrentUser -Force -PassThru
-Install-Script -Name Install-GithubRelease -Scope CurrentUser -Force -PassThru
+$Script = Install-Script -Name Install-RequiredModule -Scope CurrentUser -Force -PassThru
+$Script = Install-Script -Name Install-GithubRelease -Scope CurrentUser -Force -PassThru
+if ($Env:PATH -split [IO.Path]::PathSeparator -notcontains $Script.InstalledLocation) {
+    $ENV:PATH += ([IO.Path]::PathSeparator) + (Convert-Path $Script.InstalledLocation)
+}
 # https://github.com/PowerShell/PSResourceGet/issues/1448
 Install-RequiredModule $RequiredModules -Scope CurrentUser -TrustRegisteredRepositories
-
 Install-GithubRelease rsteube carapace-bin
-
