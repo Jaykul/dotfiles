@@ -5,12 +5,12 @@ $DefaultModules = @(
     @{ ModuleName = "Microsoft.PowerShell.Security"; ModuleVersion = "3.0.0" }
     @{ ModuleName = "Microsoft.PowerShell.Utility"; ModuleVersion = "3.1.0" }
     @{ ModuleName = "Metadata"; ModuleVersion = "1.5.7" }
-    @{ ModuleName = "Configuration"; ModuleVersion = "1.5.1" }
+    @{ ModuleName = "Configuration"; ModuleVersion = "1.6.0" }
     @{ ModuleName = "Pansies"; ModuleVersion = "2.6.1" }
 
     @{ ModuleName = "EzTheme"; ModuleVersion = "0.1.0" }
     @{ ModuleName = "Theme.PowerShell"; ModuleVersion = "0.1.0" }
-    @{ ModuleName = "Theme.PSReadline"; ModuleVersion = "0.1.0" }
+    @{ ModuleName = "Theme.PSReadline"; ModuleVersion = "0.1.1" }
     if ($Env:WT_SESSION) {
         @{ ModuleName = "Theme.WindowsTerminal"; ModuleVersion = "0.1.0" }
     } else {

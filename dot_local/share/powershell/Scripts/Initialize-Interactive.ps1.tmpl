@@ -53,13 +53,13 @@ try {
 
 # Write-Host "Importing Theme."
 if (([PoshCode.TerminalBlock]::Elevated) -and (Get-Theme "$([Environment]::UserName)-Elevated")) {
-    Import-Theme "$([Environment]::UserName)-Elevated" -Force
+    Import-Theme "$([Environment]::UserName)-Elevated"
 } elseif (($PSVersionTable.PSVersion.Major -le 7) -and (Get-Theme "$([Environment]::UserName)-Legacy")) {
-    Import-Theme "$([Environment]::UserName)-Legacy" -Force
+    Import-Theme "$([Environment]::UserName)-Legacy"
 } elseif (Get-Theme "$([Environment]::UserName)") {
-    Import-Theme "$([Environment]::UserName)" -Force
+    Import-Theme "$([Environment]::UserName)"
 } else {
-    Import-Theme Darkly -Force
+    Import-Theme Darkly
 }
 
 if ($PSStyle.OutputRendering) {
