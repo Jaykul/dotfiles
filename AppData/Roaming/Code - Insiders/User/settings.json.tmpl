@@ -15,6 +15,8 @@
     // You should use PowerShell for everything
     "terminal.integrated.defaultProfile.windows": "{{ .shell }}",
     "terminal.integrated.enableBell": true,
+    "terminal.integrated.enableVisualBell": true,
+    "accessibility.signals.terminalBell": { "sound": "on" },
     "terminal.integrated.shellIntegration.enabled": false,
     // This is the setting for the "PowerShell Integrated Console"
     "powershell.powerShellDefaultVersion": "{{ .shell }} (x64)",
@@ -107,7 +109,7 @@
         "editor.quickSuggestions": {
             "strings": true
         },
-        "editor.wordBasedSuggestions": false
+        "editor.wordBasedSuggestions": "off"
     },
     "[xml]": {
         "editor.tabSize": 2,
@@ -237,10 +239,11 @@
     "workbench.editor.enablePreview": false,
     "editor.inlineSuggest.enabled": true,
     "github.copilot.enable": {
-        "*": true,
+        "*": false,
         "yaml": true,
         "plaintext": true,
         "markdown": true,
+        "scminput": true,
         "bicep": false
     },
     "python.defaultInterpreterPath": "C:\\tools\\miniconda3\\python.exe",
@@ -251,10 +254,19 @@
     "editor.accessibilitySupport": "off",
     "cSpell.userWords": [
         "Blazor",
+        "CNCF",
+        "Guanacaste",
+        "Jaykul",
+        "Rica",
         "pwsh"
     ],
     "vsicons.dontShowNewVersionMessage": true,
     "quickgrep.grep": "Ripgrep",
     "quickgrep.preview": true,
     "git.confirmSync": false,
+    "markdownlint.focusMode": 2,
+    "diffEditor.experimental.showMoves": true,
+    "vs-kubernetes": {
+        "vs-kubernetes.crd-code-completion": "enabled"
+    },
 }

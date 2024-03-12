@@ -1,19 +1,20 @@
 {
     "$help": "https://aka.ms/terminal-documentation",
-    "$schema": "https://aka.ms/terminal-profiles-schema",
+    "$schema": "https://aka.ms/terminal-profiles-schema-preview",
     "actions": [
-        { "keys": "ctrl+f",         "command": "find" },
-        { "keys": "ctrl+n",         "command": "openNewTabDropdown" },
-        { "keys": "ctrl+shift+plus","command": { "action": "newTab" } },
-        { "keys": "ctrl+c",         "command": { "action": "copy", "singleLine": false } },
-        { "keys": "ctrl+shift+v",   "command": "paste" },
-        { "keys": "alt+shift+d",    "command": { "action": "splitPane", "split": "auto", "splitMode": "duplicate" } },
-        { "keys": "alt+w",          "command": { "action": "splitPane", "profile": "Windows PowerShell", "split": "auto" } },
-        { "keys": "alt+shift+w",    "command": { "action": "newTab", "profile": "Windows PowerShell" } },
+        {                           "command": "clearAllMarks",                                 "name": "Clear Marks" },
+        {                           "command": { "action": "addMark" },                         "name": "Mark" },
+        {                           "command": { "action": "addMark", "color": "#00FFFF" },     "name": "Mark Cyan" },
+        {                           "command": { "action": "addMark", "color": "#0000FF" },     "name": "Mark Blue" },
+        {                           "command": { "action": "addMark", "color": "#FF00FF" },     "name": "Mark Pink" },
+        {                           "command": { "action": "quakeMode" } },
         { "keys": "alt+p",          "command": { "action": "splitPane", "profile": "PwSh", "split": "auto" } },
+        { "keys": "alt+shift+d",    "command": { "action": "splitPane", "split": "auto", "splitMode": "duplicate" } },
         { "keys": "alt+shift+p",    "command": { "action": "newTab", "profile": "PwSh" } },
-        { "keys": "alt+u",          "command": { "action": "splitPane", "profile": "Ubuntu", "split": "auto" } },
         { "keys": "alt+shift+u",    "command": { "action": "newTab", "profile": "Ubuntu" } },
+        { "keys": "alt+shift+w",    "command": { "action": "newTab", "profile": "Windows PowerShell" } },
+        { "keys": "alt+u",          "command": { "action": "splitPane", "profile": "Ubuntu", "split": "auto" } },
+        { "keys": "alt+w",          "command": { "action": "splitPane", "profile": "Windows PowerShell", "split": "auto" } },
         { "keys": "ctrl+1",         "command": { "action": "switchToTab", "index": 0 } },
         { "keys": "ctrl+2",         "command": { "action": "switchToTab", "index": 1 } },
         { "keys": "ctrl+3",         "command": { "action": "switchToTab", "index": 2 } },
@@ -23,26 +24,30 @@
         { "keys": "ctrl+7",         "command": { "action": "switchToTab", "index": 6 } },
         { "keys": "ctrl+8",         "command": { "action": "switchToTab", "index": 7 } },
         { "keys": "ctrl+9",         "command": { "action": "switchToTab", "index": 8 } },
-        { "keys": "pgup",           "command": "scrollUpPage" },
-        { "keys": "pgdn",           "command": "scrollDownPage" },
-        { "keys": "ctrl+pgup",      "command": { "action": "scrollToMark", "direction": "first" }, "name": "First mark" },
-        { "keys": "ctrl+pgdn",      "command": { "action": "scrollToMark", "direction": "last" }, "name": "Last mark" },
-        { "keys": "ctrl+shift+pgup","command": "unbound" },
-        { "keys": "ctrl+shift+pgdn","command": "unbound" },
+        { "keys": "ctrl+alt+m",     "command": { "action": "sendInput", "input": "\u001b[24~b" }, "name": "Trigger shell completions" },
+        { "keys": "ctrl+c",         "command": { "action": "copy", "singleLine": false } },
         { "keys": "ctrl+end",       "command": "scrollToBottom" },
+        { "keys": "ctrl+f",         "command": "find" },
+        { "keys": "ctrl+n",         "command": "openNewTabDropdown" },
+        { "keys": "ctrl+pgdn",      "command": { "action": "scrollToMark", "direction": "last" }, "name": "Last mark" },
+        { "keys": "ctrl+pgup",      "command": { "action": "scrollToMark", "direction": "first" }, "name": "First mark" },
+        { "keys": "ctrl+shift+down","command": { "action": "scrollToMark", "direction": "next" }, "name": "Next mark" },
         { "keys": "ctrl+shift+end", "command": "unbound" },
         { "keys": "ctrl+shift+f13", "command": "toggleBlockSelection", "name": "Toggle Selection" },
-        { "keys": "f13",            "command": { "action": "markMode" }, "name": "Toggle Mark Mode" },
-        {                           "command": { "action": "addMark", "color": "#FF00FF" }, "name": "Mark Pink" },
+        { "keys": "ctrl+shift+pgdn","command": "unbound" },
+        { "keys": "ctrl+shift+pgup","command": "unbound" },
+        { "keys": "ctrl+shift+plus","command": { "action": "newTab" } },
         { "keys": "ctrl+shift+up",  "command": { "action": "scrollToMark", "direction": "previous" }, "name": "Previous mark" },
-        {                           "command": { "action": "addMark" }, "name": "Mark" },
-        { "keys": "ctrl+shift+down","command": { "action": "scrollToMark", "direction": "next" }, "name": "Next mark" },
-        {                           "command": { "action": "addMark", "color": "#0000FF" }, "name": "Mark Blue" },
-        {                           "command": { "action": "clearAllMarks" }, "name": "Clear Marks" }
+        { "keys": "ctrl+shift+v",   "command": "paste" },
+        { "keys": "f13",            "command": { "action": "markMode" }, "name": "Toggle Mark Mode" },
+        { "keys": "pgdn",           "command": "scrollDownPage" },
+        { "keys": "pgup",           "command": "scrollUpPage" },
     ],
     "copyFormatting": "all",
     "copyOnSelect": false,
     "defaultProfile": "{a3a2e83a-884a-5379-baa8-16f193a13b21}",
+    "experimental.enableShellCompletionMenu": true,
+    "newTabMenu": [ { "type": "remainingProfiles" } ],
     "profiles": {
         "defaults": {
             "backgroundImage": "ms-appdata:///local/photo-1651870364199-fc5f9f46ac85.avif",
@@ -59,9 +64,9 @@
                 "size": 12
             },
             "padding": "4",
-            "opacity": 70,
+            "opacity": 90,
             "useAcrylic": true,
-            "scrollbarState": "hidden"
+            "scrollbarState": "always"
         },
         "list": [
             {
@@ -126,12 +131,10 @@
                 "backgroundImage": "ms-appdata:///local/Powershell_black256.png",
                 "backgroundImageStretchMode": "none",
                 "icon": "ms-appx:///ProfileIcons/pwsh.png",
-                "hidden": false
-                {{- if eq .chezmoi.username "LD\\joelbennett" -}},
+                "hidden": false,
                 "environment": {
                     "POWERSHELL_UPDATECHECK": "LTS"
                 }
-                {{- end }}
             },
             {
                 "name": "PowerShell -NoProfile",
@@ -139,15 +142,12 @@
                 "backgroundImage": "ms-appdata:///local/Powershell_black256.png",
                 "backgroundImageStretchMode": "none",
                 "icon": "ms-appx:///ProfileIcons/pwsh.png",
-                "startingDirectory": "%USERPROFILE%"
-                {{- if eq .chezmoi.username "LD\\joelbennett" -}},
+                "startingDirectory": "%USERPROFILE%",
                 "environment": {
                     "POWERSHELL_UPDATECHECK": "LTS"
                 }
-                {{- end }}
             },
-            {   // This doesn't work if the Canonical one does
-                "name": "Ubuntu",
+            {   "name": "Ubuntu",
                 "source": "Windows.Terminal.Wsl",
                 "guid": "{2c4de342-38b7-51cf-b940-2309a097f518}",
                 "icon": "ms-appdata:///local/Ubuntu.png",
@@ -155,7 +155,6 @@
                 "backgroundImageStretchMode": "none",
                 "hidden": false
             },
-            {{ if eq .chezmoi.username "ZENTOO\\Jaykul" -}}
             {
                 "name": "Matrix (SSH)",
                 "tabTitle": "Matrix",
@@ -170,7 +169,6 @@
                 "backgroundImageStretchMode": "none",
                 "hidden": false
             }
-            {{- end }}
         ]
     },
     "schemes": [
@@ -429,22 +427,28 @@
         }
     ],
     "startOnUserLogin": true,
+    "tabSwitcherMode": "mru",
     "tabWidthMode": "titleLength",
     "theme": "Darkly",
     "themes": [
         {
             "name": "Darkly",
             "tab": {
-                "background": "#310E3F",
+                "background": "#310E3FFF",
+                "iconStyle": "default",
                 "showCloseButton": "hover",
                 "unfocusedBackground": null
             },
             "tabRow": {
-                "background": "#11002F",
-                "unfocusedBackground": "#11002F"
+                "background": "#11002FFF",
+                "unfocusedBackground": "#11002FFF"
             },
             "window": {
-                "applicationTheme": "dark"
+                "applicationTheme": "dark",
+                "experimental.rainbowFrame": false,
+                "frame": null,
+                "unfocusedFrame": null,
+                "useMica": false
             }
         }
     ],
