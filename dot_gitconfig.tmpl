@@ -15,9 +15,9 @@
 #   24-bit-color = "always"
 	features = unobtrusive-line-numbers darkly
 	syntax-theme = OneHalfDark
-#	hyperlinks = true
-#	hyperlinks-file-link-format = 'file://{path}'
-#	navigate = true
+	hyperlinks = true
+	hyperlinks-file-link-format = 'file://{path}'
+	navigate = true
 
 [delta "unobtrusive-line-numbers"]
 	line-numbers = true
@@ -52,6 +52,7 @@
 	diffFilter = delta --color-only
 [merge]
 	tool = vscode
+    conflictstyle = diff3
 [mergetool "vscode"]
 	cmd = code-insiders --wait --merge $REMOTE $LOCAL $BASE $MERGED
 [diff]
@@ -74,3 +75,9 @@
 	command = pwsh -c \"\\$('major','breaking','minor','feature','patch','fix' -match '$ARG') ?? 'patch'\"
 [advice]
 	skippedCherryPicks = false
+[rerere]
+	enabled = true
+[column]
+	ui = auto
+[branch]
+	sort = -committerdate

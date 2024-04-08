@@ -1,0 +1,22 @@
+{
+	"folders": [
+        {
+            "path": "."
+        },
+        {
+            "path": "../../../.config/chezmoi"
+        },
+        {
+            "path": "../../../OneDrive - loanDepot/Documents/PowerShell"
+        },
+        {
+            "path": ".."
+        },
+        {
+            "path": "../../../.config"
+        }
+    ],
+  "settings": {
+    "powershell.cwd": "c:\\Users\\joelbennett\\.local\\share\\chezmoi"
+  }
+}
