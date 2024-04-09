@@ -456,7 +456,7 @@ Set-PSReadLineKeyHandler "Ctrl+k" {
         [ReadLine]::Replace(0, $line.Length, "kubectl ")
         [ReadLine]::SetCursorPosition(8)
     }
-} --Description "macro: kubectl --context <current-context> --namespace demos"
+} -Description "macro: kubectl --context <current-context> --namespace demos"
 <#
 Set-PSReadLineKeyHandler -Chord 'F12,b' {
     $commandLine = ""
