@@ -14,7 +14,6 @@
     "files.defaultLanguage": "powershell",
     // You should use PowerShell for everything
     "terminal.integrated.defaultProfile.windows": "{{ .shell }}",
-    "terminal.integrated.enableBell": true,
     "terminal.integrated.enableVisualBell": true,
     "accessibility.signals.terminalBell": { "sound": "on" },
     "terminal.integrated.shellIntegration.enabled": false,
@@ -43,7 +42,7 @@
     // I like the sidebar on the right
     "workbench.sideBar.location": "right",
     // I don't like confirming that I meant to paste
-    "terminal.integrated.enableMultiLinePasteWarning": false,
+    "terminal.integrated.enableMultiLinePasteWarning": "auto",
     "terminal.integrated.allowChords": false,
     "terminal.integrated.copyOnSelection": true,
     // I want a lot more scrollback than the default
@@ -224,7 +223,7 @@
         "\u2019",
         "\u201d",
         "\u201c"
-    ]
+    ],
 
     //******** extensions will add new settings at the bottom - don't assume I customized this stuff ***********//
     "python.pythonPath": "C:\\tools\\miniconda3\\python.exe",
