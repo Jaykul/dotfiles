@@ -4,7 +4,10 @@ trap { Write-Warning ($_.ScriptStackTrace | Out-String) }
 $ProfileDir = $PSScriptRoot
 
 # The XDG standard says use the variable and tells us how to calculate a fallback
-$DataHome = if ($ENV:XDG_CONFIG_HOME) {
+# $DataHome = [Environment]::GetFolderPath("LocalApplicationData") # $ENV:XDG_DATA_HOME    .local/share  # scripts and modules
+# $ConfigHome = [Environment]::GetFolderPath("ApplicationData")    # $ENV:XDG_CONFIG_HOME  .config       # profile and settings
+
+$DataHome = if ($ENV:XDG_CONFIG_HOME -and $ENV:XDG_DATA_HOME) {
     $ENV:XDG_DATA_HOME
 } else {
     [IO.Path]::Combine($HOME, ".local", "share")
