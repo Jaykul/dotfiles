@@ -13,12 +13,12 @@
     // Default all the things to PowerShell
     "files.defaultLanguage": "powershell",
     // You should use PowerShell for everything
-    "terminal.integrated.defaultProfile.windows": "{{ .shell }}",
+    "terminal.integrated.defaultProfile.windows": "PowerShell",
     "terminal.integrated.enableVisualBell": true,
     "accessibility.signals.terminalBell": { "sound": "on" },
     "terminal.integrated.shellIntegration.enabled": false,
     // This is the setting for the "PowerShell Integrated Console"
-    "powershell.powerShellDefaultVersion": "{{ .shell }} (x64)",
+    "powershell.powerShellDefaultVersion": "PowerShell (x64)",
     // Use Windows Terminal for all the "show in terminal" stuff
     "terminal.external.windowsExec": "wt.exe",
     // Pester 5 now
@@ -85,9 +85,19 @@
     "editor.wrappingIndent": "indent",
 
     // I love font ligatures
-    "editor.fontFamily": "'CaskaydiaCove Nerd Font', 'CaskaydiaCove Nerd Font Mono', 'CaskaydiaCove NF', 'CaskaydiaCove NF Mono', 'Cascadia Code PL', 'Cascadia Code', 'FuraCode NF Retina', 'FuraCode NF', 'Iosevka NF', 'Fira Code', Consolas, 'Courier New', monospace",
-    "editor.fontLigatures": true,
-
+    "editor.fontFamily": "'Cascadia Code NF', 'Cascadia Mono NF', 'Cascadia Code', 'FuraCode NF Retina', 'FuraCode NF', 'Iosevka NF', 'Fira Code', Consolas, 'Courier New', monospace",
+    "terminal.integrated.fontFamily": "'Cascadia Code NF', monospace",
+    //"editor.codeLensFontFamily": "Monaspace Krypton",
+    //"editor.inlayHints.fontFamily": "Monaspace Krypton",
+    //"editor.inlineSuggest.fontFamily": "Monaspace Radon",
+    //"editor.experimentalInlineEdit.fontFamily": "Monaspace Radon",
+    //"editor.inlineSuggest.suppressSuggestions": true,
+    //"errorLens.fontFamily": "'Cascadia Code NF'",
+    "editor.fontVariations": "'slnt' 0, 'wght' 850, 'wdth' 40",
+    // "editor.fontLigatures": true,
+    // https://github.com/githubnext/monaspace?tab=readme-ov-file#coding-ligatures
+    // https://github.com/githubnext/monaspace?tab=readme-ov-file#character-variants
+    "editor.fontLigatures": "'calt', 'liga', 'ss01', 'ss02', 'ss03', 'ss04', 'ss05', 'ss06', 'ss07', 'ss08', 'ss09'",
     // Personally, I like ALL my editors this way:
     "editor.rulers": [80,120],
     "editor.tabSize": 4,
@@ -180,6 +190,10 @@
                 "settings": { "foreground": "#FF0000" }
             },
             {
+                "scope": "comment",
+                "settings": { "fontStyle": "italic" }
+            },
+            {
                 "scope": "punctuation.definition.variable.powershell",
                 "settings": { "foreground": "#DAD" }
             },
@@ -245,11 +259,11 @@
     "workbench.editor.enablePreview": false,
     "editor.inlineSuggest.enabled": true,
     "github.copilot.enable": {
-        "*": false,
-        "yaml": true,
+        "*": true,
         "plaintext": true,
         "markdown": true,
         "scminput": true,
+        "yaml": true,
         "bicep": false
     },
     "python.defaultInterpreterPath": "C:\\tools\\miniconda3\\python.exe",
@@ -275,4 +289,8 @@
     "vs-kubernetes": {
         "vs-kubernetes.crd-code-completion": "enabled"
     },
+    "cody.commandCodeLenses": true,
+    "editor.suggest.snippetsPreventQuickSuggestions": true,
+    "editor.inlineSuggest.syntaxHighlightingEnabled": true,
+    "editor.inlineSuggest.suppressSuggestions": true,
 }

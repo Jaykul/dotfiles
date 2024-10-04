@@ -132,8 +132,8 @@ function Select-UniquePath {
     if ($Env:PSModulePath_Before) {
         $Env:PSModulePath_Before
     } else {
-        [System.Environment]::GetEnvironmentVariable("PSMODULEPATH", "Machine")
-        [System.Environment]::GetEnvironmentVariable("PSMODULEPATH", "User")
+        if (($M=[System.Environment]::GetEnvironmentVariable("PSMODULEPATH", "Machine"))){ $M }
+        if (($M=[System.Environment]::GetEnvironmentVariable("PSMODULEPATH", "User"))){ $M }
     }
 ) +
 
@@ -163,8 +163,8 @@ $(if (!$IsMacOS -and !$IsLinux) {
     if ($Env:PATH_Before) {
         $Env:PATH_Before
     } else {
-        [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
-        [System.Environment]::GetEnvironmentVariable("PATH", "User")
+        if (($M = [System.Environment]::GetEnvironmentVariable("PATH", "Machine"))) { $M }
+        if (($M = [System.Environment]::GetEnvironmentVariable("PATH", "User"))) { $M }
     }
 ) +
 @("$DataHome\powershell\Scripts") +

@@ -134,7 +134,7 @@ return {
     default_prog = {getFirstShell('pwsh.exe', 'pwsh', 'powershell.exe', 'bash', 'bash.exe', 'cmd.exe')},
     default_cwd = wt.home_dir,
     font_size = 12.0,
-    font = wt.font_with_fallback({'CaskaydiaCove NFM', 'FiraCode NFM', 'Cascadia Code', 'Consolas'}),
+    font = wt.font_with_fallback({'Cascadia Code NF', 'Cascadia Mono NF', 'Cascadia Code', 'Consolas'}),
     launch_menu = launch_menu,
     mouse_bindings = mouse_bindings,
 
