@@ -139,15 +139,23 @@ config.mouse_bindings =  {
     },
 }
 config.quick_select_patterns = {
-    -- match things that looks like sha1 hashes
-    -- '[0-9a-fA-F]{7}'
-    -- '[0-9a-fA-F]{40}'
-    -- node names from kubectl
-    '[a-z][0-9a-z-]+(?=\\s+\\d+/\\d+)'
+    -- match standalone words that look like sha1 hashes
+    '\\b[0-9a-fA-F]{9}\\b',
+    '\\b[0-9a-fA-F]{40}\\b',
+    -- node names from kubectl (only when followed by the n/n READY count)
+    '^[a-z][0-9a-z-]+(?=\\s+\\d+/\\d+)',
+    -- file paths
+    '\\b(?:[a-zA-Z]:|\\./|\\.\\\\)[\\/\\w\\d\\-\\_\\.]+\\b',
+    -- urls
+    '\\bhttps?://[^\\s]+\\b',
 }
 
 config.keys = {
     -- { key = 'P', mods = 'CTRL|SHIFT', action = wezterm.action.ActivateCommandPalette },
+    -- { key = 'F', mods = 'CTRL', action = wezterm.action.CharSelect },
+    -- { key = ' ', mods = 'CTRL|SHIFT', action = wezterm.action.QuickSelect  },
+    { key = 'F', mods = 'CTRL|SHIFT', action = wezterm.action.QuickSelectArgs { patterns = config.quick_select_patterns } },
+
     { key = 'p', mods = 'CTRL', action = wezterm.action.ShowLauncher },
     -- Present in to our project picker
     { key = 'p', mods = 'LEADER', action = projects.choose_project() },
@@ -183,7 +191,7 @@ config.keys = {
     { key = '9', mods = 'CTRL', action = act.ActivateTab(-1) },
 
     { key = 'f', mods = 'CTRL', action = act.Search 'CurrentSelectionOrEmptyString' },
-    { key = 'F', mods = 'SHIFT|CTRL', action = act.Search 'CurrentSelectionOrEmptyString' },
+    -- { key = 'F', mods = 'SHIFT|CTRL', action = act.Search 'CurrentSelectionOrEmptyString' },
 
     { key = '`', mods = 'CTRL', action = act.ShowDebugOverlay },
     { key = '~', mods = 'SHIFT|CTRL', action = act.ShowDebugOverlay },
