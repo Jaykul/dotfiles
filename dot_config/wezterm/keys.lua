@@ -1,147 +1,14 @@
--- https://wezfurlong.org/wezterm/config/lua/config/
 local wezterm = require 'wezterm'
-local config = wezterm.config_builder()
 local projects = require 'projects'
-local launch = require 'launch'
-
 local act = wezterm.action
--- local keys = require 'keys'
-
-local appearance = require 'appearance'
-if appearance.is_dark() then
-  config.color_scheme = 'MaterialDark'
-else
-  config.color_scheme = 'Material'
-end
-
-config.font = wezterm.font_with_fallback({'Cascadia Code', 'Symbols Nerd Font Mono'})
-config.font_size = 12.0
-
--- Equivalent to POSIX basename(3)
--- Given "/foo/bar" returns "bar"
--- Given "c:\\foo\\bar" returns "bar"
-local function basename(s)
-  return string.gsub(s, '(.*[/\\])(.*)', '%2')
-end
-
-local function segments_for_right_status(window)
-  return {
-    -- window:mux_window():active_pane():get_current_working_dir(),
-    basename(window:mux_window():active_pane():get_foreground_process_name()),
-    window:active_workspace(),
-    wezterm.hostname(),
-    wezterm.strftime('%a %b %-d %H:%M'),
-  }
-end
 
 
-wezterm.on('update-status', function(window, _)
-  local SOLID_LEFT_ARROW = wezterm.nerdfonts.pl_right_hard_divider
-  local segments = segments_for_right_status(window)
+-- Define a lua table to hold _our_ module's functions
+local module = {}
 
-  local color_scheme = window:effective_config().resolved_palette
-  -- Note the use of wezterm.color.parse here, this returns
-  -- a Color object, which comes with functionality for lightening
-  -- or darkening the colour (amongst other things).
-  local bg = wezterm.color.parse(color_scheme.background)
-  local fg = color_scheme.foreground
-
-  -- Each powerline segment is going to be coloured progressively
-  -- darker/lighter depending on whether we're on a dark/light colour
-  -- scheme. Let's establish the "from" and "to" bounds of our gradient.
-  local gradient_to, gradient_from = bg, bg
-  if appearance.is_dark() then
-    gradient_from = gradient_to:lighten(0.2)
-  else
-    gradient_from = gradient_to:darken(0.2)
-  end
-
-  -- Yes, WezTerm supports creating gradients, because why not?! Although
-  -- they'd usually be used for setting high fidelity gradients on your terminal's
-  -- background, we'll use them here to give us a sample of the powerline segment
-  -- colours we need.
-  local gradient = wezterm.color.gradient(
-    {
-      orientation = 'Horizontal',
-      colors = { gradient_from, gradient_to },
-    },
-    #segments -- only gives us as many colours as we have segments.
-  )
-
-  -- We'll build up the elements to send to wezterm.format in this table.
-  local elements = {}
-
-  for i, seg in ipairs(segments) do
-    local is_first = i == 1
-
-    if is_first then
-      table.insert(elements, { Background = { Color = 'none' } })
-    end
-    table.insert(elements, { Foreground = { Color = gradient[i] } })
-    table.insert(elements, { Text = SOLID_LEFT_ARROW })
-
-    table.insert(elements, { Foreground = { Color = fg } })
-    table.insert(elements, { Background = { Color = gradient[i] } })
-    table.insert(elements, { Text = ' ' .. seg .. ' ' })
-  end
-
---   table.insert(elements, { Foreground = { Color = 'none' } })
---   table.insert(elements, { Background = { Color = gradient[#segments] } })
---   table.insert(elements, { Text = SOLID_LEFT_ARROW })
-
-  window:set_right_status(wezterm.format(elements))
-end)
-
-local function move_pane(key, direction)
-  return {
-    key = key,
-    mods = 'LEADER',
-    action = wezterm.action.ActivatePaneDirection(direction),
-  }
-end
-
-local function resize_pane(key, direction)
-  return {
-    key = key,
-    action = wezterm.action.AdjustPaneSize { direction, 3 }
-  }
-end
-
--- use_fancy_tab_bar = false,
--- config.hide_tab_bar_if_only_one_tab = true
--- Removes the title bar, leaving only the tab bar. Keeps
--- the ability to resize by dragging the window's edges.
--- We coudl try 'RESIZE|INTEGRATED_BUTTONS' to keep the window controls visible
--- and integrate them into the tab bar.
-config.window_decorations = 'RESIZE|INTEGRATED_BUTTONS'
--- Sets the font for the window frame (tab bar)
-config.window_frame = {
-  font = wezterm.font({ family = 'Cascadia Code', weight = 'Bold', style = 'Italic' }),
-  font_size = 11,
-}
-
-
-config.initial_cols = 120
-config.initial_rows = 54
-config.window_background_opacity = 1.0
-config.default_cursor_style = "BlinkingUnderline"
-config.cursor_blink_rate = 500
-    -- window_decorations = "RESIZE",
-config.window_padding = { left = 0, right = 0, top = 0, bottom = 0, }
-config.default_prog = {launch.getFirstShell('pwsh.exe', 'pwsh', 'powershell.exe', 'bash', 'bash.exe', 'cmd.exe')}
-config.default_cwd = wezterm.home_dir
-config.launch_menu = launch.menu
-config.quick_select_patterns = {
-    -- match standalone words that look like sha1 hashes
-    '\\b[0-9a-fA-F]{9}\\b',
-    '\\b[0-9a-fA-F]{40}\\b',
-    -- node names from kubectl (only when followed by the n/n READY count)
-    '^[a-z][0-9a-z-]+(?=\\s+\\d+/\\d+)',
-    -- file paths
-    '\\b(?:[a-zA-Z]:|\\./|\\.\\\\)[\\/\\w\\d\\-\\_\\.]+\\b',
-    -- urls
-    '\\bhttps?://[^\\s]+\\b',
-}
+-- Returns a bool based on whether the host operating system's
+-- appearance is light or dark.
+function module.bind_keys(config)
 
 
     -- I had to disable the defaults in order to be able to use Ctrl+Shift for text selection in the prompt
@@ -174,6 +41,12 @@ config.quick_select_patterns = {
         -- activate-pane mode
         { key = 'a', mods = 'LEADER', action = act.ActivateKeyTable { name = 'activate_pane', timeout_milliseconds = 1000, }, },
         { key = 'z', mods = 'LEADER', action = act.TogglePaneZoomState },
+        { key = 'm', mods = 'LEADER|CTRL', action = act.TogglePaneZoomState },
+        { key = 'LeftArrow', mods = 'LEADER|CTRL', action = act.ActivatePaneDirection 'Left' },
+        { key = 'RightArrow', mods = 'LEADER|CTRL', action = act.ActivatePaneDirection 'Right' },
+        { key = 'UpArrow', mods = 'LEADER|CTRL', action = act.ActivatePaneDirection 'Up' },
+        { key = 'DownArrow', mods = 'LEADER|CTRL', action = act.ActivatePaneDirection 'Down' },
+        { key = 'Enter', mods = 'LEADER|CTRL', action = wezterm.action_callback( function(win, pane) local tab, window = pane:move_to_new_tab() end)},
         { key = 'd', mods = 'LEADER', action = act.ShowDebugOverlay },
         { key = '`', mods = 'CTRL', action = act.ShowDebugOverlay },
 
@@ -234,19 +107,19 @@ config.quick_select_patterns = {
                 end
             end)
         },
-        -- { key = 'c', mods = 'CTRL', action = act.CopyTo 'Clipboard' },
-        { key = 'c', mods = 'SHIFT|CTRL', action = act.CopyTo 'Clipboard' },
-        { key = 'c', mods = 'WIN', action = act.CopyTo 'Clipboard' },
+        { key = 'c', mods = 'ALT', action = act.CopyTo 'Clipboard' },
+        -- { key = 'c', mods = 'SHIFT|CTRL', action = act.CopyTo 'Clipboard' },
+        -- { key = 'c', mods = 'WIN', action = act.CopyTo 'Clipboard' },
 
         -- { key = 'K', mods = 'CTRL', action = act.ClearScrollback 'ScrollbackOnly' },
         { key = 'u', mods = 'CTRL', action = act.CharSelect{ copy_on_select = true, copy_to =  'ClipboardAndPrimarySelection' } },
-        { key = 'u', mods = 'SHIFT|CTRL', action = act.CharSelect{ copy_on_select = true, copy_to =  'ClipboardAndPrimarySelection' } },
-        { key = 'v', mods = 'CTRL', action = act.PasteFrom 'Clipboard' },
-        { key = 'V', mods = 'CTRL|SHIFT', action = act.PasteFrom 'Clipboard' },
+        -- { key = 'u', mods = 'SHIFT|CTRL', action = act.CharSelect{ copy_on_select = true, copy_to =  'ClipboardAndPrimarySelection' } },
+        { key = 'v', mods = 'ALT', action = act.PasteFrom 'Clipboard' },
+        -- { key = 'V', mods = 'CTRL|SHIFT', action = act.PasteFrom 'Clipboard' },
         { key = 'w', mods = 'CTRL', action = act.CloseCurrentTab{ confirm = true } },
         -- { key = 'W', mods = 'SHIFT|CTRL', action = act.CloseCurrentTab{ confirm = true } },
         { key = 'x', mods = 'CTRL|SHIFT', action = act.ActivateCopyMode },
-        { key = 'z', mods = 'SHIFT|CTRL', action = act.TogglePaneZoomState },
+        { key = 'z', mods = 'ALT', action = act.TogglePaneZoomState },
         -- { key = 'Z', mods = 'SHIFT|CTRL', action = act.TogglePaneZoomState },
         { key = '[', mods = 'SHIFT|WIN', action = act.ActivateTabRelative(-1) },
         { key = ']', mods = 'SHIFT|WIN', action = act.ActivateTabRelative(1) },
@@ -260,18 +133,15 @@ config.quick_select_patterns = {
         { key = 'Tab', mods = 'CTRL', action = act.ActivateTabRelative(1) },
         { key = 'Tab', mods = 'SHIFT|CTRL', action = act.MoveTabRelative(-1) },
 
-        -- { key = 'LeftArrow', mods = 'SHIFT|CTRL', action = act.ActivatePaneDirection 'Left' },
-        -- { key = 'LeftArrow', mods = 'SHIFT|ALT|CTRL', action = act.AdjustPaneSize{ 'Left', 1 } },
-        -- { key = 'RightArrow', mods = 'SHIFT|CTRL', action = act.ActivatePaneDirection 'Right' },
-        -- { key = 'RightArrow', mods = 'SHIFT|ALT|CTRL', action = act.AdjustPaneSize{ 'Right', 1 } },
-        { key = 'PageUp', mods = 'SHIFT', action = act.ScrollToPrompt(-1) },
+        { key = 'LeftArrow', mods = 'ALT', action = act.ActivatePaneDirection 'Left' },
+        { key = 'RightArrow', mods = 'ALT', action = act.ActivatePaneDirection 'Right' },
+        { key = 'UpArrow', mods = 'ALT', action = act.ActivatePaneDirection 'Up' },
+        { key = 'DownArrow', mods = 'ALT', action = act.ActivatePaneDirection 'Down' },
+
         { key = 'UpArrow', mods = 'SHIFT', action = act.ScrollToPrompt(-1) },
-        -- { key = 'UpArrow', mods = 'SHIFT|CTRL', action = act.ActivatePaneDirection 'Up' },
-        -- { key = 'UpArrow', mods = 'SHIFT|ALT|CTRL', action = act.AdjustPaneSize{ 'Up', 1 } },
-        { key = 'PageDown', mods = 'SHIFT', action = act.ScrollToPrompt(1) },
         { key = 'DownArrow', mods = 'SHIFT', action = act.ScrollToPrompt(1) },
-        -- { key = 'DownArrow', mods = 'SHIFT|CTRL', action = act.ActivatePaneDirection 'Down' },
-        -- { key = 'DownArrow', mods = 'SHIFT|ALT|CTRL', action = act.AdjustPaneSize{ 'Down', 1 } },
+        { key = 'PageUp', mods = 'SHIFT', action = act.ScrollToPrompt(-1) },
+        { key = 'PageDown', mods = 'SHIFT', action = act.ScrollToPrompt(1) },
         { key = 'Insert', mods = 'SHIFT', action = act.PasteFrom 'PrimarySelection' },
         { key = 'Insert', mods = 'CTRL', action = act.CopyTo 'PrimarySelection' },
         { key = 'Copy', mods = 'NONE', action = act.CopyTo 'Clipboard' },
@@ -353,6 +223,11 @@ config.quick_select_patterns = {
             { key = 'DownArrow', action = act.AdjustPaneSize { 'Down', 1 } },
             { key = 'j', action = act.AdjustPaneSize { 'Down', 1 } },
 
+            { key = "Enter", action = wezterm.action_callback(
+                function(win, pane)
+                    local tab, window = pane:move_to_new_tab()
+                end
+            ) },
             -- Cancel the mode by pressing escape
             { key = 'Escape', action = 'PopKeyTable' },
         },
@@ -377,5 +252,7 @@ config.quick_select_patterns = {
     }
 
 
-return config
+    return config
+end
 
+return module

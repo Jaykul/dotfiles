@@ -382,7 +382,7 @@ Set-PSReadLineKeyHandler "Alt+[" {
 # Cycle through arguments on current line and select the text. This makes it easier to quickly change the argument if re-running a previously run command from the history
 # or if using a psreadline predictor. You can also use a digit argument to specify which argument you want to select, i.e. Alt+1, Alt+a selects the first argument
 # on the command line.
-Set-PSReadLineKeyHandler -Key "Alt+k" {
+Set-PSReadLineKeyHandler -Key "Alt+j" {
     param($key, $arg)
 
     $tokens = $null
@@ -434,13 +434,39 @@ Set-PSReadLineKeyHandler -Key "Alt+k" {
     [ReadLine]::SelectForwardChar($null, ($nextAst.Extent.EndOffset - $nextAst.Extent.StartOffset) - $endOffsetAdjustment)
 } -Description "Select next argument in the command line (or use a digit to select by index)"
 
-Set-PSReadLineKeyHandler "Ctrl+k" {
+Set-PSReadLineKeyHandler "alt+k" {
+    $Suggestion = Get-History -Count 10 | Sort-Object Id -Descending | ForEach-Object {
+        $tokens = $null
+        $parseError = $null
+        $Ast = [System.Management.Automation.Language.Parser]::ParseInput($_.CommandLine, [ref]$tokens, [ref]$parseError)
+
+        if ($Kast = $Ast.Find({
+                    $args[0] -is [System.Management.Automation.Language.CommandAst] -and
+                    $args[0].CommandElements[0].Value -eq "kubectl" -and
+                    $args[0].CommandElements.Value -eq "--context" #-and
+                    #$args[0].CommandElements.Value -eq "--namespace"
+                }, $true)) {
+            $Parameter = $null
+            foreach ($param in $kast.CommandElements.Where{ $_.StringConstantType -eq "BareWord" }.Value) {
+                if ($Parameter -eq "Context") { $Context = $param; $Parameter = $null; continue }
+                if ($Parameter -eq "Namespace") { $Namespace = $param; $Parameter = $null; continue }
+                if ($param -in "--context", "-c") { $Parameter = "Context"; continue }
+                elseif ($param -in "--namespace", "-n") { $Parameter = "Namespace"; continue }
+            }
+            "kubectl --context $Context --namespace $Namespace"
+        }
+    } | Select-Object -First 1
+
+    if (!$Suggestion) {
+        $context, $namespace = (kubectl config view --minify --template '{{range .contexts}}{{.name}}{{if .context.namespace}}/{{.context.namespace}}{{end}}{{end}}').Split("/")
+        $Suggestion = "kubectl --context $context --namespace $namespace "
+    }
+
     $line = $null
     $cursor = $null
     $offset = 0
     [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
-    $context = kubectl config current-context
-    $suggestion = "kubectl --context $context --namespace demos "
+
     # If the line is empty or just kubectl, insert the suggestion
     if (!$line -or $line -eq "kubectl ") {
         # Inject the start of a kubectl command with the explicit context
@@ -448,9 +474,11 @@ Set-PSReadLineKeyHandler "Ctrl+k" {
         if ($context -match "prd") { # audibly warn me
             Write-Host -NoNewline "`e[3;3;11;7;11;7,~"
         }
-        # Select the namespace at the end, so you can replace it
-        [ReadLine]::SetCursorPosition($suggestion.Length - $offset - 6)
-        [ReadLine]::SelectForwardChar($null, 5)
+        if($namespace) {
+            # Select the namespace at the end, so you can replace it
+            [ReadLine]::SetCursorPosition($suggestion.Length - $namespace.Length)
+            [ReadLine]::SelectForwardChar($null, $namespace.Length)
+        }
     # If I press it twice ... take off the parameters
     } elseif ($line -eq $suggestion) {
         [ReadLine]::Replace(0, $line.Length, "kubectl ")
@@ -526,7 +554,7 @@ if (!$IsVSCode) {
 
     # Corporate keeps pinning things. They obviously don't understand the meaning of "User Pinned"
     Get-ChildItem "$env:APPDATA\Microsoft\Internet Explorer\Quick Launch\User Pinned\Taskbar" |
-        Where-Object { $_.BaseName -notin "KeePass 2", "File Explorer", "Microsoft Teams", "Visual Studio Code - Insiders", "Outlook" } |
+        Where-Object { $_.BaseName -notin "KeePass 2", "Firefox", "WezTerm", "File Explorer", "Microsoft Teams", "Visual Studio Code - Insiders", "Outlook" } |
         ForEach-Object {
             Start-Process -FilePath $_.FullName -Verb "taskbarunpin" -ErrorAction SilentlyContinue
         }
