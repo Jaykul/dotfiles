@@ -7,8 +7,6 @@ local act = wezterm.action
 local keys = require 'keys'
 
 config = keys.bind_keys(config)
-config.font = wezterm.font_with_fallback({'Cascadia Code', 'Symbols Nerd Font Mono'})
-config.font_size = 12.0
 
 
 local powerline = require 'powerlinetabs'
@@ -17,6 +15,14 @@ if powerline.is_dark() then
 else
   config.color_scheme = 'Material'
 end
+
+config.inactive_pane_hsb = {
+  saturation = 0.7,
+  brightness = 0.5,
+}
+
+config.font = wezterm.font_with_fallback({'Cascadia Code', 'Symbols Nerd Font Mono'})
+config.font_size = 12.0
 
 powerline.segments_for_right_status = (function(window, _)
   return {
