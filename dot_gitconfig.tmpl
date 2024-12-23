@@ -12,11 +12,10 @@
 
 [delta]
 	true-color = "always"
-#   24-bit-color = "always"
 	features = unobtrusive-line-numbers darkly
 	syntax-theme = OneHalfDark
 	hyperlinks = true
-	hyperlinks-file-link-format = 'file://{path}'
+	hyperlinks-file-link-format = 'vscode://file/{path}:{line}'
 	navigate = true
 
 [delta "unobtrusive-line-numbers"]
@@ -42,7 +41,7 @@
 	file-style = omit
 	hunk-header-decoration-style = "#00b494" ul
 	hunk-header-line-number-style = "#03a4ff"
-	hunk-header-style = line-number syntax
+	hunk-header-style = file line-number syntax
 	plus-emph-style = syntax "#066a57"
 	plus-style = syntax "#03372d"
 	minus-emph-style = normal "#a73f74"
