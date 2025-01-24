@@ -50,7 +50,7 @@ config.cursor_blink_rate = 500
 config.window_padding = { left = 0, right = 0, top = 0, bottom = 0, }
 config.default_prog = {launch.getFirstShell('pwsh.exe', 'pwsh', 'powershell.exe', 'bash', 'bash.exe', 'cmd.exe')}
 config.default_cwd = wezterm.home_dir
-config.launch_menu = launch.menu
+config.launch_menu = launch.getShells({})
 config.quick_select_patterns = {
     -- match standalone words that look like sha1 hashes
     '\\b[0-9a-fA-F]{9}\\b',
