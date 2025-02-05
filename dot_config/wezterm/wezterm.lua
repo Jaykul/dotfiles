@@ -69,5 +69,9 @@ config.quick_select_patterns = {
     '\\bhttps?://[^\\s]+\\b',
 }
 
+-- I don't use ssh very much (except for git and earthly) ...
+-- but the nightly builds are breaking my KeeAgent setup
+config.mux_enable_ssh_agent = false
+
 return config
 
