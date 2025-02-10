@@ -80,3 +80,7 @@
 	ui = auto
 [branch]
 	sort = -committerdate
+{{ if eq .chezmoi.os "windows" -}}
+[http]
+	sslBackend = schannel
+{{- end }}
