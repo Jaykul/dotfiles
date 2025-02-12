@@ -1,11 +1,11 @@
 -- https://wezfurlong.org/wezterm/config/lua/config/
 local wezterm = require 'wezterm'
-local config = wezterm.config_builder()
 local launch = require 'launch'
-
-local act = wezterm.action
 local keys = require 'keys'
 
+local act = wezterm.action
+local config = wezterm.config_builder()
+-- bind_keys passes through the config after adding the keybindings
 config = keys.bind_keys(config)
 
 
@@ -49,6 +49,7 @@ config.window_frame = {
 
 config.initial_cols = 120
 config.initial_rows = 54
+config.enable_scroll_bar = true
 config.window_background_opacity = 1.0
 config.default_cursor_style = "BlinkingUnderline"
 config.cursor_blink_rate = 500
