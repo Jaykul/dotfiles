@@ -188,7 +188,7 @@ Set-PSReadLineKeyHandler Ctrl+I Yank
 
 Set-PSReadLineKeyHandler Ctrl+h BackwardDeleteWord
 Set-PSReadLineKeyHandler Ctrl+Enter AddLine
-Set-PSReadLineKeyHandler Ctrl+Shift+Enter {
+Set-PSReadLineKeyHandler Ctrl+Shift+Enter -Description 'AcceptAndGetNext without loosing our spot' {
     if ([ReadLine]::GetHistoryItems().Count -gt 7.5kb) {
         Set-PSReadLineOption -MaximumHistoryCount 7kb
         Set-PSReadLineOption -MaximumHistoryCount 8kb
@@ -196,7 +196,7 @@ Set-PSReadLineKeyHandler Ctrl+Shift+Enter {
     [ReadLine]::AcceptAndGetNext()
 }
 
-Set-PSReadLineKeyHandler -Key Alt+w {
+Set-PSReadLineKeyHandler -Key Alt+w -Description "Save current line in history but do not execute" {
     param($key, $arg)
 
     $line = $null
@@ -204,9 +204,9 @@ Set-PSReadLineKeyHandler -Key Alt+w {
     [ReadLine]::GetBufferState([ref]$line, [ref]$cursor)
     [ReadLine]::AddToHistory($line)
     [ReadLine]::RevertLine()
-} -Description "Save current line in history but do not execute"
+}
 
-Set-PSReadLineKeyHandler '(', '{', '"', "'" {
+Set-PSReadLineKeyHandler '(', '{', '"', "'"  -Description "Insert matching braces and quotes" {
     param($key, $arg)
 
     $closeChar = switch ($key.KeyChar) {
@@ -242,9 +242,9 @@ Set-PSReadLineKeyHandler '(', '{', '"', "'" {
         [ReadLine]::Insert("$($key.KeyChar)")
         [ReadLine]::SetCursorPosition($cursor + 1)
     }
-} -Description "Insert matching braces and quotes"
+}
 
-Set-PSReadLineKeyHandler ')', '}', '"', "'" {
+Set-PSReadLineKeyHandler ')', '}', '"', "'" -Description "Insert or skip closing brace or wrap!" {
     param($key, $arg)
 
     $command = $null
@@ -271,9 +271,9 @@ Set-PSReadLineKeyHandler ')', '}', '"', "'" {
             [ReadLine]::SetCursorPosition($command.length + 2)
         }
     }
-} -Description "Insert or skip closing brace or wrap!"
+}
 
-Set-PSReadLineKeyHandler Backspace {
+Set-PSReadLineKeyHandler Backspace -Description "Delete smart braces (or quotes)" {
     param($key, $arg)
 
     $line = $null
@@ -298,9 +298,9 @@ Set-PSReadLineKeyHandler Backspace {
             [ReadLine]::BackwardDeleteChar($key, $arg)
         }
     }
-} -Description "Delete smart quotes/parens/braces"
+}
 
-Set-PSReadLineKeyHandler "Alt+]" {
+Set-PSReadLineKeyHandler "Alt+]" -Description "Indent selected lines" {
     param($key, $arg)
     $start = $null
     $length = $null
@@ -337,9 +337,9 @@ Set-PSReadLineKeyHandler "Alt+]" {
             [ReadLine]::SelectLine()
         }
     }
-} -Description "Indent selected lines"
+}
 
-Set-PSReadLineKeyHandler "Alt+[" {
+Set-PSReadLineKeyHandler "Alt+[" -Description "Unindent selected lines" {
     param($key, $arg)
     $start = $null
     $length = $null
@@ -377,7 +377,40 @@ Set-PSReadLineKeyHandler "Alt+[" {
             [ReadLine]::SelectLine()
         }
     }
-} -Description "Unindent selected lines"
+}
+
+Set-PSReadLineKeyHandler "Alt+x" -Description "Expand aliases" {
+    param($key, $arg)
+
+    $ast = $null
+    $tokens = $null
+    $errors = $null
+    $cursor = $null
+    [ReadLine]::GetBufferState([ref]$ast, [ref]$tokens, [ref]$errors, [ref]$cursor)
+    [array]::Reverse($tokens)
+    foreach ($token in $tokens) {
+        if ($token.TokenFlags -band [System.Management.Automation.Language.TokenFlags]::CommandName) {
+            $command = $token.Extent.Text
+            $limit = 5 # recurse aliases of aliases, but don't get carried away
+            while ($command -and ($alias = $ExecutionContext.InvokeCommand.GetCommand($command, 'Alias'))) {
+                if ($alias.ResolvedCommandName) {
+                    $command = $alias.ResolvedCommandName
+                    if (($limit--) -gt 0) {
+                        continue
+                    }
+                }
+                break
+            }
+
+            $extent = $token.Extent
+            $length = $extent.EndOffset - $extent.StartOffset
+            [ReadLine]::Replace($extent.StartOffset, $length, $command)
+        }
+    }
+    [ReadLine]::GetBufferState([ref]$ast, [ref]$cursor)
+    [ReadLine]::SetCursorPosition($ast.Length)
+}
+
 
 # Cycle through arguments on current line and select the text. This makes it easier to quickly change the argument if re-running a previously run command from the history
 # or if using a psreadline predictor. You can also use a digit argument to specify which argument you want to select, i.e. Alt+1, Alt+a selects the first argument
@@ -465,7 +498,7 @@ Set-PSReadLineKeyHandler "alt+k" {
     $line = $null
     $cursor = $null
     $offset = 0
-    [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
+    [ReadLine]::GetBufferState([ref]$line, [ref]$cursor)
 
     # If the line is empty or just kubectl, insert the suggestion
     if (!$line -or $line -eq "kubectl ") {
@@ -489,7 +522,7 @@ Set-PSReadLineKeyHandler "alt+k" {
 Set-PSReadLineKeyHandler -Chord 'F12,b' {
     $commandLine = ""
     $cursorIndex = 0
-    [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$commandLine, [ref]$cursorIndex)
+    [ReadLine]::GetBufferState([ref]$commandLine, [ref]$cursorIndex)
     $completionPrefix = $commandLine
 
     $result = "`e]633;Completions"
