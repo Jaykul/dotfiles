@@ -10,7 +10,6 @@ $DefaultModules = @(
 
     @{ ModuleName = "EzTheme"; ModuleVersion = "0.1.0" }
     @{ ModuleName = "Theme.PowerShell"; ModuleVersion = "0.1.0" }
-    @{ ModuleName = "Theme.PSReadline"; ModuleVersion = "0.1.1" }
     if ($Env:WT_SESSION) {
         @{ ModuleName = "Theme.WindowsTerminal"; ModuleVersion = "0.1.0" }
     } else {
@@ -20,12 +19,15 @@ $DefaultModules = @(
         @{ ModuleName = "Theme.PSStyle"; ModuleVersion = "0.1.0" }
     }
 
-    @{ ModuleName = "posh-git"; ModuleVersion = "1.1.0" }
-    @{ ModuleName = "TerminalBlocks"; ModuleVersion = "1.0.0" }
-    @{ ModuleName = "PowerLine"; ModuleVersion = "4.0.0" }
-    @{ ModuleName = "Environment"; RequiredVersion = "1.1.0" }
-    # Can't import this on PSCore, and shouldn't need to
-    # @{ ModuleName = "PSReadLine"; ModuleVersion = "2.3.0" }
+#    if (!$Env:WARP_IS_LOCAL_SHELL_SESSION) {
+        @{ ModuleName = "Theme.PSReadline"; ModuleVersion = "0.1.1" }
+        @{ ModuleName = "posh-git"; ModuleVersion = "1.1.0" }
+        @{ ModuleName = "TerminalBlocks"; ModuleVersion = "2.0.0" }
+        @{ ModuleName = "PowerLine"; ModuleVersion = "4.0.0" }
+        @{ ModuleName = "Environment"; RequiredVersion = "1.1.0" }
+        # Can't import this on PSCore, and shouldn't need to
+        # @{ ModuleName = "PSReadLine"; ModuleVersion = "2.3.0" }
+#    }
 
     @{ ModuleName = "DefaultParameter"; RequiredVersion = "2.0.0" }
     # Maybe redundant in PowerShell 7
