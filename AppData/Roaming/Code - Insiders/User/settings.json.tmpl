@@ -103,6 +103,7 @@
     "errorLens.fontWeight": "200",
 
     // Personally, I like ALL my editors this way:
+    "editor.accessibilitySupport": "off",
     "editor.rulers": [80,120],
     "editor.tabSize": 4,
     "editor.insertSpaces": true,
@@ -117,6 +118,16 @@
     "editor.minimap.renderCharacters": false,
     "editor.minimap.showSlider": "always",
 
+    "editor.formatOnSave": true,
+    "editor.formatOnSaveMode": "modifications",
+
+    // Having a battle with AI "suggestions" vs language completions
+    "editor.suggest.snippetsPreventQuickSuggestions": true,
+    "editor.inlineSuggest.enabled": true,
+    "editor.inlineSuggest.syntaxHighlightingEnabled": true,
+    // "editor.inlineSuggest.suppressSuggestions": true,
+    // "workbench.editor.enablePreview": false,
+
     "[json]": {
         "editor.tabSize": 2,
         "editor.quickSuggestions": {
@@ -130,7 +141,9 @@
     },
     "[yaml]": {
         "editor.tabSize": 2,
-        "editor.autoIndent": "advanced"
+        "editor.autoIndent": "advanced",
+        "editor.defaultFormatter": "kennylong.kubernetes-yaml-formatter",
+        "editor.formatOnSaveMode": "file", // critical for kennylong ^^ formatter to work!
     },
     "[terraform]": {
         "editor.tabSize": 2,
@@ -203,6 +216,16 @@
             },
         ]
     },
+
+    "git.autofetch": true,
+    "git.allowForcePush": true,
+    "git.autoStash": true,
+    "git.fetchOnPull": true,
+    "git.rebaseWhenSync": true,
+    "git.mergeEditor": true,
+    "git.confirmSync": false,
+    "diffEditor.experimental.showMoves": true,
+
     // GitLens is one of the core extensions, in my book
     "gitlens.remotes":[
         {
@@ -246,22 +269,14 @@
     //******** extensions will add new settings at the bottom - don't assume I customized this stuff ***********//
     "python.pythonPath": "C:\\tools\\miniconda3\\python.exe",
     "extensions.ignoreRecommendations": false,
-    "yaml.format.enable": true,
     "liveshare.languages.allowGuestCommandControl": true,
-    "editor.formatOnSaveMode": "modifications",
-    "git.autofetch": true,
-    "git.allowForcePush": true,
-    "git.autoStash": true,
-    "git.fetchOnPull": true,
-    "git.rebaseWhenSync": true,
-    "git.mergeEditor": true,
+
     "workbench.startupEditor": "welcomePage",
     "workbench.editorAssociations": {
         "*.ipynb": "jupyter-notebook"
     },
     "jupyter.insidersChannel": "off",
-    "workbench.editor.enablePreview": false,
-    "editor.inlineSuggest.enabled": true,
+
     "github.copilot.enable": {
         "*": true,
         "plaintext": true,
@@ -275,7 +290,7 @@
     "GithubGistExplorer.explorer.gistAscending": false,
     "GithubGistExplorer.explorer.subscriptionSortBy": "Last Updated",
     "GithubGistExplorer.explorer.subscriptionAscending": false,
-    "editor.accessibilitySupport": "off",
+
     "cSpell.userWords": [
         "Blazor",
         "CNCF",
@@ -287,14 +302,9 @@
     "vsicons.dontShowNewVersionMessage": true,
     "quickgrep.grep": "Ripgrep",
     "quickgrep.preview": true,
-    "git.confirmSync": false,
     "markdownlint.focusMode": 2,
-    "diffEditor.experimental.showMoves": true,
     "vs-kubernetes": {
         "vs-kubernetes.crd-code-completion": "enabled"
     },
     "cody.commandCodeLenses": true,
-    "editor.suggest.snippetsPreventQuickSuggestions": true,
-    "editor.inlineSuggest.syntaxHighlightingEnabled": true,
-    "editor.inlineSuggest.suppressSuggestions": true,
 }
