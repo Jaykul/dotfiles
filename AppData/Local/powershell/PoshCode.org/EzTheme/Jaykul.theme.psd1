@@ -183,19 +183,19 @@
         UnderlineOff                      = '[24m'
     } -TypeName 'Theme.PSStyle', 'System.Management.Automation.PSCustomObject', 'System.Object')
     'Theme.PowerShell'      = (PSObject @{
-        Background              = Black
-        DebugBackgroundColor    = Black
-        DebugForegroundColor    = Yellow
-        ErrorAccentColor        = Cyan
-        ErrorBackgroundColor    = Black
-        ErrorForegroundColor    = Red
-        Foreground              = Gray
-        FormatAccentColor       = Green
-        ProgressBackgroundColor = Yellow
-        ProgressForegroundColor = Black
-        VerboseBackgroundColor  = Black
-        VerboseForegroundColor  = Yellow
-        WarningBackgroundColor  = Black
-        WarningForegroundColor  = Yellow
+        Background              = "Black"
+        DebugBackgroundColor    = "Black"
+        DebugForegroundColor    = "Yellow"
+        ErrorAccentColor        = "Cyan"
+        ErrorBackgroundColor    = "Black"
+        ErrorForegroundColor    = "Red"
+        Foreground              = "Gray"
+        FormatAccentColor       = "Green"
+        ProgressBackgroundColor = "Yellow"
+        ProgressForegroundColor = "Black"
+        VerboseBackgroundColor  = "Black"
+        VerboseForegroundColor  = "Yellow"
+        WarningBackgroundColor  = "Black"
+        WarningForegroundColor  = "Yellow"
     } -TypeName 'Microsoft.PowerShell.ConsoleHost+ConsoleColorProxy', 'Selected.Microsoft.PowerShell.ConsoleHost+ConsoleColorProxy', 'System.Management.Automation.PSCustomObject', 'System.Object')
 }
