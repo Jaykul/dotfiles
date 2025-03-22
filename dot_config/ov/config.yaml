@@ -228,6 +228,15 @@ Mode:
     LineNumMode: false
     WrapMode: false
     TabWidth: 2
+  ft:
+    SkipLines: 1
+    Header: 2
+    AlternateRows: true
+    ColumnMode: true
+    ColumnRainbow: true
+    ColumnWidth: true
+    LineNumMode: false
+    WrapMode: false
   markdown:
     SectionDelimiter: "^#"
     WrapMode: true
