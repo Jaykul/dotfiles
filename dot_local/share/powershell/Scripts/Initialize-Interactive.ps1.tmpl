@@ -38,16 +38,16 @@ if ($pwd.Path -eq "$Env:SystemRoot\System32") {
     {{- end }}
 }
 
-# if ($Env:WARP_IS_LOCAL_SHELL_SESSION) {
-#     function prompt { "`n`e[36m$($MyInvocation.HistoryId)❯" }
-# }
+if ($Env:WARP_IS_LOCAL_SHELL_SESSION) {
+    function prompt { "`n`e[36m$($MyInvocation.HistoryId)❯" }
+}
 
 {{ template "DefaultModules.ps1" . }}
 try {
     Import-Module -FullyQualifiedName $DefaultModules -Scope Global -ErrorAction Stop
 } catch {
     Write-Warning "Failed to import default modules. Trying again, one at a time."
-    foreach($Module in $DefaultModules) {
+    foreach ($Module in $DefaultModules) {
         try {
             Import-Module -FullyQualifiedName $Module -Scope Global -ErrorAction Stop
         } catch {
@@ -74,8 +74,8 @@ if ($PSStyle.OutputRendering) {
 [PoshCode.Pansies.RgbColor]::ColorMode = 'Rgb24Bit'
 
 
-# if (!$Env:WARP_IS_LOCAL_SHELL_SESSION) {
-    # Warp doesn't use PSReadLine or the PowerShell prompt
+# Warp doesn't use PSReadLine or the PowerShell prompt
+if (!$Env:WARP_IS_LOCAL_SHELL_SESSION) {
     $global:GitPromptSettings = New-GitPromptSettings
     $global:GitPromptSettings.BeforeStatus = ''
     $global:GitPromptSettings.AfterStatus = ''
@@ -87,16 +87,17 @@ if ($PSStyle.OutputRendering) {
 
     # Now that we've imported PowerLine and configured Posh-Git we can call the NEW prompt function:
     Write-PowerlinePrompt
-# }
+}
 
-{{ if eq .chezmoi.username "LD\\joelbennett" -}}
+{{if eq .chezmoi.username "LD\\joelbennett" -}}
 # Write-Host "Detected LoanDepot"
 
-# if (!$Env:WARP_IS_LOCAL_SHELL_SESSION) {
+# Warp doesn't use tab completion (booo!)
+if (!$Env:WARP_IS_LOCAL_SHELL_SESSION) {
     # Gives you tab completion on -Component, -Environment, -Datacenter, -ComputerName, -Role parameters on all commands in the below modules.
     # Beware the more modules you add to this list, the longer you powershell profile will take to set up.
     Update-LDArgumentCompleter -ModuleName "LDXGet", "LDXSet", "LDNetworking", "LDF5", "LDServerManagement"
-# }
+}
 
 # You must regularly Update-LDModule...
 # But not from inside VS Code, because when I open VS Code, I'm usually opening 3-6 at a time

@@ -6,7 +6,7 @@ $DefaultModules = @(
     @{ ModuleName = "Microsoft.PowerShell.Utility"; ModuleVersion = "3.1.0" }
     @{ ModuleName = "Metadata"; ModuleVersion = "1.5.7" }
     @{ ModuleName = "Configuration"; ModuleVersion = "1.6.0" }
-    @{ ModuleName = "Pansies"; ModuleVersion = "2.11.0" }
+    @{ ModuleName = "Pansies"; ModuleVersion = "3.0.0" }
 
     @{ ModuleName = "EzTheme"; ModuleVersion = "0.1.0" }
     @{ ModuleName = "Theme.PowerShell"; ModuleVersion = "0.1.0" }
@@ -19,17 +19,18 @@ $DefaultModules = @(
         @{ ModuleName = "Theme.PSStyle"; ModuleVersion = "0.1.0" }
     }
 
-#    if (!$Env:WARP_IS_LOCAL_SHELL_SESSION) {
+    @{ ModuleName = "TerminalBlocks"; ModuleVersion = "2.0.0" }
+    @{ ModuleName = "Environment"; RequiredVersion = "1.1.0" }
+    @{ ModuleName = "DefaultParameter"; RequiredVersion = "2.0.0" }
+
+    if (!$Env:WARP_IS_LOCAL_SHELL_SESSION) {
         @{ ModuleName = "Theme.PSReadline"; ModuleVersion = "0.1.1" }
         @{ ModuleName = "posh-git"; ModuleVersion = "1.1.0" }
-        @{ ModuleName = "TerminalBlocks"; ModuleVersion = "2.0.0" }
         @{ ModuleName = "PowerLine"; ModuleVersion = "4.0.0" }
-        @{ ModuleName = "Environment"; RequiredVersion = "1.1.0" }
-        # Can't import this on PSCore, and shouldn't need to
+        # Can't import this on PSCore, and should not need to
         # @{ ModuleName = "PSReadLine"; ModuleVersion = "2.3.0" }
-#    }
+    }
 
-    @{ ModuleName = "DefaultParameter"; RequiredVersion = "2.0.0" }
     # Maybe redundant in PowerShell 7
     # @{ ModuleName = "ErrorView"; RequiredVersion = "0.0.2" }
     @{ ModuleName = "zLocation"; ModuleVersion = "1.4.3" }

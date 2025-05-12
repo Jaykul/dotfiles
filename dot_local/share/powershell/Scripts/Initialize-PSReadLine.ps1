@@ -14,7 +14,7 @@ function global:PSConsoleHostReadLine {
 }
 
 try {
-    Add-PowerLineBlock -Index 0 ([PoshCode.TerminalBlock]@{
+    Add-PowerLineBlock -Index 0 ([PoshCode.TerminalBlocks.Block]@{
         MyInvocation = " " # this is a trick to make sure it doesn't export :)
         Caps         = ""
         Content      = {
@@ -24,27 +24,27 @@ try {
                     if ($global:LastHistoryId -ne ($global:LastHistoryId = $MyInvocation.HistoryId)) {
                         # Command finished. Exit code only cares if it's zero or not.
                         # OSC 133 ; D [; <ExitCode>] ST
-                        "$([char]0x1b)]133;D;$([int]![PoshCode.TerminalBlock]::LastSuccess)`a"
-                    } else {
-                        "$([char]0x1b)]133;D;0`a"
+                            "$([char]0x1b)]133;D;$([int]![PoshCode.TerminalBlocks.Block]::LastSuccess)`a"
+                        } else {
+                            "$([char]0x1b)]133;D;0`a"
+                        }
                     }
-                }
 
-                # Prompt started
-                # OSC 633 ; A ST
-                "$([char]0x1b)]133;A`a"
+                    # Prompt started
+                    # OSC 633 ; A ST
+                    "$([char]0x1b)]133;A`a"
 
-                # Update current working directory
-                # OSC 7; file://<hostname>/<path> ST
-                "$([char]0x1b)]7;file://${env:COMPUTERNAME}/$($ExecutionContext.SessionState.Path.CurrentFileSystemLocation)`a"
-            ) -join ""
-        }
-    })
+                    # Update current working directory
+                    # OSC 7; file://<hostname>/<path> ST
+                    "$([char]0x1b)]7;file://${env:COMPUTERNAME}/$($ExecutionContext.SessionState.Path.CurrentFileSystemLocation)`a"
+                ) -join ""
+            }
+        })
 
     if ($IsVSCode) {
         # Stop VSCode from screwing with my prompt
         $global:__VSCodeOriginalPrompt = { Write-PowerlinePrompt }
-        Add-PowerLineBlock -Index 0 ([PoshCode.TerminalBlock]@{
+        Add-PowerLineBlock -Index 0 ([PoshCode.TerminalBlocks.Block]@{
                 MyInvocation = " " # this is a trick to make sure it doesn't export :)
                 Caps         = ""
                 Content      = {

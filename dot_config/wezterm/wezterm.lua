@@ -26,11 +26,11 @@ config.font_size = 12.0
 
 powerline.segments_for_right_status = (function(window, _)
   return {
-    -- window:mux_window():active_pane():get_current_working_dir(),
-    -- basename(window:mux_window():active_pane():get_foreground_process_name()),
+    window:mux_window():active_pane():get_current_working_dir(),
+    basename(window:mux_window():active_pane():get_foreground_process_name()),
     window:active_workspace(),
     wezterm.hostname(),
-    -- wezterm.strftime('%a %b %-d %H:%M'),
+    wezterm.strftime('%a %b %-d %H:%M'),
   }
 end)
 
@@ -70,11 +70,9 @@ config.quick_select_patterns = {
     '\\bhttps?://[^\\s]+\\b',
 }
 
-if (config.mux_enable_ssh_agent) then
-    -- I don't use ssh very much (except for git and earthly) ...
-    -- but the nightly builds are breaking my KeeAgent setup
-    config.mux_enable_ssh_agent = false
-end
+-- I don't use ssh very much (except for git and earthly) ...
+-- but the nightly builds are breaking my KeeAgent setup
+config.mux_enable_ssh_agent = false
 
 return config
 

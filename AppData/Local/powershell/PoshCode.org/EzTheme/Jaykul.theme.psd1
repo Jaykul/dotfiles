@@ -50,19 +50,19 @@
         DefaultSeparator                  = ''
         Prompt                            = @(
             New-TerminalBlock -Separator ' ' -Content '{ Update-ZLocation $pwd }'
-            Show-ElapsedTime -Autoformat -Prefix "&hourglass_done;" -Bg DeepSkyBlue -Fg Black -Caps '', ''
-            New-TerminalBlock -Separator ' ' -NewLine
-            Show-NestedPromptLevel -BackgroundColor Magenta1 -RepeatCharacter "&gear;" -Postfix " "
-            Show-HistoryId -Bg Magenta4 -Fg White
-            New-TerminalBlock -Separator ' ' -Spacer
-            Show-KubeContext -Prefix "&nf-md-ship_wheel; " -Bg DarkOrchid2 -Fg White
-            Show-AzureContext -Bg Purple3 -Prefix "&nf-mdi-azure; " -Fg White
-            Show-Path -HomeString "&House;" -Separator '' -Bg SlateBlue4 -Fg White -Depth 3
-            New-TerminalBlock -Separator ' ' -Spacer
+            Show-ElapsedTime -Autoformat -Prefix "&hourglass_done;" -Caps '', ''
+            Show-Newline
+            Show-NestedPromptLevel -RepeatCharacter "&gear;" -Postfix " "
+            Show-HistoryId
+            Show-Space
+            Show-KubeContext
+            Show-AzureContext
+            Show-Path -HomeString "&House;" -Separator '' -Depth 3
+            Show-Space
             Show-PoshGitStatus -Bg Gray30
-            Show-Date -Format "h\:mm" -Prefix "🕒" -Bg DeepSkyBlue4 -Fg White
-            New-TerminalBlock -Separator ' ' -NewLine
-            New-TerminalBlock -Separator ' ' -Fg '#207A70' -Bg '#35C7B6' -EFg '#CE178E' -Content ''
+            Show-Date -Format "h\:mm" -Prefix "🕒"
+            Show-Newline
+            New-TerminalBlock -Fg 'Black' -Content ''
         )
         PSReadLineContinuationPrompt      = '█ '
         PSReadLineContinuationPromptColor = '[38;2;99;184;255m'

@@ -46,28 +46,32 @@ $LDChamber  = $chamber  = "$deut\chamber"
 
 $Interactive = Convert-Path "$DataHome/powershell/Scripts/Initialize-Interactive.ps1"
 
-if ($Host.UI.RawUI.KeyAvailable) {
-    $Controlled = $false
-    while ($Host.UI.RawUI.KeyAvailable -and ($key = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown,IncludeKeyUp"))) {
-        if (!$Controlled -and $key.ControlKeyState -match "LeftCtrlPressed") {
-            $Controlled = $true
+if (!$Env:WARP_IS_LOCAL_SHELL_SESSION) {
+    if ($Host.UI.RawUI.KeyAvailable) {
+        $Controlled = $false
+        while ($Host.UI.RawUI.KeyAvailable -and ($key = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown,IncludeKeyUp"))) {
+            if (!$Controlled -and $key.ControlKeyState -match "LeftCtrlPressed") {
+                $Controlled = $true
+            }
+        }
+        if ($Controlled) {
+            Write-Host "Skipping Interactive Config. To complete, run:`n. `"$Interactive`"" -ForegroundColor Yellow
+            if ($PSVersionTable.PSVersion.Major -gt 5) {
+                function prompt { "`e[36m$($MyInvocation.HistoryId)`e[37m $pwd`e[0m`n❯" }
+            } else {
+                function prompt { "$([char]27)[36m$($MyInvocation.HistoryId)$([char]27)[37m $pwd$([char]27)[0m`n$([char]0x276f)" }
+            }
+            return
         }
     }
-    if ($Controlled) {
-        Write-Host "Skipping Interactive Config. To complete, run:`n. `"$Interactive`"" -ForegroundColor Yellow
-        if ($PSVersionTable.PSVersion.Major -gt 5) {
-            function prompt { "`e[36m$($MyInvocation.HistoryId)`e[37m $pwd`e[0m`n❯" }
-        } else {
-            function prompt { "$([char]27)[36m$($MyInvocation.HistoryId)$([char]27)[37m $pwd$([char]27)[0m`n$([char]0x276f)" }
-        }
-        return
-    }
-}
 
-# PART 3. Things we only need in interactive sessions
-#   For performance reasons, I don't want to do all of this work when I'm running automated scripts
-function prompt {
-    Write-Host "Preparing interactive session for first use..." -ForegroundColor Cyan
+    # PART 3. Things we only need in interactive sessions
+    #   For performance reasons, I don't want to do all of this work when I'm running automated scripts
+    function prompt {
+        Write-Host "Preparing interactive session for first use..." -ForegroundColor Cyan
+        . $Interactive
+        # $InformationPreference = "SilentlyContinue"
+    }
+} else {
     . $Interactive
-    # $InformationPreference = "SilentlyContinue"
 }
