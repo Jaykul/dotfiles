@@ -4,25 +4,17 @@ trap { Write-Warning ($_.ScriptStackTrace | Out-String) }
 $ProfileDir = $PSScriptRoot
 
 # The XDG standard says use the variable and tells us how to calculate a fallback
-# $DataHome = [Environment]::GetFolderPath("LocalApplicationData") # $ENV:XDG_DATA_HOME    .local/share  # scripts and modules
-# $ConfigHome = [Environment]::GetFolderPath("ApplicationData")    # $ENV:XDG_CONFIG_HOME  .config       # profile and settings
+# Dotnet Core uses the XDG standard for these so we can use that.
+# ConfigHome $ENV:XDG_CONFIG_HOME  $HOME/.config       AppData/Roaming # profile and settings
+# DataHome   $ENV:XDG_DATA_HOME    $HOME/.local/share  AppData/Local   # scripts and modules
 
-$DataHome = if ($ENV:XDG_CONFIG_HOME -and $ENV:XDG_DATA_HOME) {
-    $ENV:XDG_DATA_HOME
-} else {
-    [IO.Path]::Combine($HOME, ".local", "share")
-}
-$ConfigHome = if ($ENV:XDG_CONFIG_HOME) {
-    $ENV:XDG_CONFIG_HOME
-} else {
-    [IO.Path]::Combine($HOME, ".config")
-}
-
+$ConfigHome = [Environment]::GetFolderPath("ApplicationData")
+$DataHome = [Environment]::GetFolderPath("LocalApplicationData")
 
 # I can run `Update-PSModulePath` any time, but I don't by default
 Set-Alias Update-PSModulePath $DataHome/powershell/Scripts/Update-PSModulePath.ps1
 # I just read the cached values from the last run
-if (Test-Path ($PSModulePathPath = [IO.Path]::ChangeExtension($Profile, ".PSModulePath.env"))) {
+if (Test-Path ($PSModulePathPath = [IO.Path]::ChangeExtension($Profile, "$Env:PSModulePath_Before"))) {
     $Env:PSModulePath_Before = $Env:PSModulePath
     $Env:PSModulePath = @(Get-Content $PSModulePathPath) -join [IO.Path]::PathSeparator
 }

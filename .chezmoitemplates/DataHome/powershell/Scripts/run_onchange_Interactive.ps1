@@ -1,15 +1,10 @@
 #!/usr/bin/env pwsh
 # This script needs to install modules whenever I change the Initialize-Interactive script
-# profile hash: {{ include "dot_local/share/powershell/Scripts/Initialize-Interactive.ps1.tmpl" | sha256sum }}
+# profile hash: {{ include ".chezmoitemplates/DataHome/powershell/Scripts/Initialize-Interactive.ps1" | sha256sum }}
 $ErrorView = 'DetailedView'
 
-# For now, I'm not going to try to force using the AppData location
-# But I am going to choose to always install in the PowerShell 7 location
-$Destination = if (!$IsLinux -and !$IsMacOS) {
-    Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'PowerShell/Modules'
-} else {
-    Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'powershell/Modules'
-}
+# It's time to switch to the DataHome AppData/Local location
+$Destination = "$DataHome/powershell/Modules"
 
 {{ template "DefaultModules.ps1" . }}
 
@@ -55,6 +50,6 @@ if (-not (Get-Command Install-GithubRelease -ErrorAction SilentlyContinue)) {
     }
 }
 # https://github.com/PowerShell/PSResourceGet/issues/1448
-Install-ModuleFast $RequiredModules -Destination $Destination
+Install-ModuleFast $RequiredModules -Destination $Destination -Update -Prerelease
 # I probably have tools I should be auto-upgrading, but Install-GithubRelease should track versions so I don't reinstall them unnecessarily
 Install-GithubRelease rsteube carapace-bin

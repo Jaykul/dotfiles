@@ -114,5 +114,5 @@ function Copy-ToTaskbar {
 }
 
 Get-Application -TaskbarPinned |
-    Where-Object Name -NotIn "KeePass 2", "Firefox", "WezTerm", "File Explorer", "Microsoft Teams", "Visual Studio Code - Insiders", "Outlook", "Logseq" |
+    Where-Object Name -NotIn "KeePass 2", "Firefox", "WezTerm", "File Explorer", "Microsoft Teams", "Visual Studio Code - Insiders", "Outlook", "Logseq", "Miro", "Microsoft Edge" |
     Unpin

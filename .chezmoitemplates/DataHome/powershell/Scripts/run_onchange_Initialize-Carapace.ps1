@@ -29,4 +29,4 @@ Register-ArgumentCompleter -Native -CommandName $CarapaceCommands -ScriptBlock {
 )
 Write-Host "Initialize-Carapace`n$InitializeCarapace"
 
-Set-Content ~/.local/share/powershell/Scripts/Initialize-Carapace.ps1 $InitializeCarapace
+Set-Content $PSScriptRoot/Initialize-Carapace.ps1 $InitializeCarapace

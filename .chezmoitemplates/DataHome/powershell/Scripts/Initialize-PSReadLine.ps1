@@ -379,7 +379,7 @@ Set-PSReadLineKeyHandler "alt+k" {
     } | Select-Object -First 1
 
     if (!$Suggestion) {
-        $context, $namespace = (kubectl config view --minify --template '{{range .contexts}}{{.name}}{{if .context.namespace}}/{{.context.namespace}}{{end}}{{end}}').Split("/")
+        $context, $namespace = (kubectl config view --minify --template '{{"{{range .contexts}}{{.name}}{{if .context.namespace}}/{{.context.namespace}}{{end}}{{end}}"}}').Split("/")
         $Suggestion = "kubectl --context $context --namespace $namespace "
     }
 

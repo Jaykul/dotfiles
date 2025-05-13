@@ -3,9 +3,18 @@ README.md
 # My "Documents" only really exist in one place. Ignore the ones that don't exist:
 {{ if not (stat (joinPath .chezmoi.homeDir "OneDrive - PoshCode")) }}
 OneDrive - PoshCode
-{{ else if not (stat (joinPath .chezmoi.homeDir "OneDrive - loanDepot")) }}
+{{ end }}
+{{ if not (stat (joinPath .chezmoi.homeDir "OneDrive - loanDepot")) }}
 OneDrive - loanDepot
-{{ else }}
+{{ end }}
+{{ if or  (stat (joinPath .chezmoi.homeDir "OneDrive - PoshCode"))
+          (stat (joinPath .chezmoi.homeDir "OneDrive - loanDepot")) }}
 # If either of the others exist, ignore Documents even though it DOES exist
 Documents
+{{ end }}
+
+
+# Ignore the whole AppData directory if we're not on Windows
+{{ if not (eq .chezmoi.os "windows") }}
+AppData
 {{ end }}
