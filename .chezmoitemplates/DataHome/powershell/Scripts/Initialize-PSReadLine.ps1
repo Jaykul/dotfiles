@@ -18,43 +18,47 @@ try {
         MyInvocation = " " # this is a trick to make sure it doesn't export :)
         Caps         = ""
         Content      = {
-            @(
+            -join @(
                 # This doesn't need to run if $MyInvocation.HistoryId hasn't changed...
                 if ($MyInvocation.HistoryId -gt 1) {
                     if ($global:LastHistoryId -ne ($global:LastHistoryId = $MyInvocation.HistoryId)) {
                         # Command finished. Exit code only cares if it's zero or not.
                         # OSC 133 ; D [; <ExitCode>] ST
-                            "$([char]0x1b)]133;D;$([int]![PoshCode.TerminalBlocks.Block]::LastSuccess)`a"
-                        } else {
-                            "$([char]0x1b)]133;D;0`a"
-                        }
+                        "$([char]0x1b)]133;D;$([int]![PoshCode.TerminalBlocks.Block]::LastSuccess)`a"
+                    } else {
+                        "$([char]0x1b)]133;D;0`a"
                     }
+                }
 
-                    # Prompt started
-                    # OSC 633 ; A ST
-                    "$([char]0x1b)]133;A`a"
+                # Prompt started
+                # OSC 633 ; A ST
+                "$([char]0x1b)]133;A`a"
 
-                    # Update current working directory
-                    # OSC 7; file://<hostname>/<path> ST
-                    "$([char]0x1b)]7;file://${env:COMPUTERNAME}/$($ExecutionContext.SessionState.Path.CurrentFileSystemLocation)`a"
-                ) -join ""
-            }
-        })
+                # Update current working directory
+                # OSC 7; file://<hostname>/<path> ST
+                "$([char]0x1b)]7;file://${env:COMPUTERNAME}/$($ExecutionContext.SessionState.Path.CurrentFileSystemLocation)`a"
+            )
+        }
+        DefaultBackgroundColor = [PoshCode.TerminalBlocks.Block]::DefaultColor
+        DefaultForegroundColor = [PoshCode.TerminalBlocks.Block]::DefaultColor
+    })
 
     if ($IsVSCode) {
         # Stop VSCode from screwing with my prompt
         $global:__VSCodeOriginalPrompt = { Write-PowerlinePrompt }
         Add-PowerLineBlock -Index 0 ([PoshCode.TerminalBlocks.Block]@{
-                MyInvocation = " " # this is a trick to make sure it doesn't export :)
-                Caps         = ""
-                Content      = {
-                    if (($MyInvocation.HistoryId -gt 1) -and ($global:LastHistoryId -ne ($global:LastHistoryId = $MyInvocation.HistoryId))) {
-                        # Add command-line to history
-                        # OSC 633 ; E [; <CommandLine>] ST
-                        "$([char]0x1b)]633;E;$((Get-History -Id ($MyInvocation.HistoryId -1) -ErrorAction Ignore).CommandLine.Replace("\", "\\").Replace("`n", "\x0a").Replace(";", "\x3b"))`a"
-                    }
+            MyInvocation = " " # this is a trick to make sure it doesn't export :)
+            Caps         = ""
+            Content      = {
+                if (($MyInvocation.HistoryId -gt 1) -and ($global:LastHistoryId -ne ($global:LastHistoryId = $MyInvocation.HistoryId))) {
+                    # Add command-line to history
+                    # OSC 633 ; E [; <CommandLine>] ST
+                    "$([char]0x1b)]633;E;$((Get-History -Id ($MyInvocation.HistoryId -1) -ErrorAction Ignore).CommandLine.Replace("\", "\\").Replace("`n", "\x0a").Replace(";", "\x3b"))`a"
                 }
-            })
+            }
+            DefaultBackgroundColor = [PoshCode.TerminalBlocks.Block]::DefaultColor
+            DefaultForegroundColor = [PoshCode.TerminalBlocks.Block]::DefaultColor
+        })
         # Set IsWindows property
         [Console]::Write("$([char]0x1b)]633;P;IsWindows=$($IsWindows)`a")
 
@@ -385,7 +389,6 @@ Set-PSReadLineKeyHandler "alt+k" {
 
     $line = $null
     $cursor = $null
-    $offset = 0
     [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
 
     # If the line is empty or just kubectl, insert the suggestion
