@@ -2,6 +2,7 @@ trap { Write-Warning ($_.ScriptStackTrace | Out-String) }
 # $InformationPreference = "Continue"
 # I wish $Profile was in $Home, but since it's not:
 $ProfileDir = $PSScriptRoot
+$IsVSCode = $ENV:TERM_PROGRAM -eq "vscode"
 
 # The XDG standard says use the variable and tells us how to calculate a fallback
 # Dotnet Core uses the XDG standard for these so we can use that.
@@ -39,14 +40,14 @@ $LDChamber  = $chamber  = "$deut\chamber"
 $Interactive = Convert-Path "$DataHome/powershell/Scripts/Initialize-Interactive.ps1"
 
 if (!$Env:WARP_IS_LOCAL_SHELL_SESSION) {
-    if ($Host.UI.RawUI.KeyAvailable) {
+    if ($IsVSCode -or $Host.UI.RawUI.KeyAvailable) {
         $Controlled = $false
         while ($Host.UI.RawUI.KeyAvailable -and ($key = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown,IncludeKeyUp"))) {
             if (!$Controlled -and $key.ControlKeyState -match "LeftCtrlPressed") {
                 $Controlled = $true
             }
         }
-        if ($Controlled) {
+        if ($IsVSCode -or $Controlled) {
             Write-Host "Skipping Interactive Config. To complete, run:`n. `"$Interactive`"" -ForegroundColor Yellow
             if ($PSVersionTable.PSVersion.Major -gt 5) {
                 function prompt { "`e[36m$($MyInvocation.HistoryId)`e[37m $pwd`e[0m`n❯" }

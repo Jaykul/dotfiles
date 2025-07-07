@@ -50,6 +50,6 @@ if (-not (Get-Command Install-GithubRelease -ErrorAction SilentlyContinue)) {
     }
 }
 # https://github.com/PowerShell/PSResourceGet/issues/1448
-Install-ModuleFast $RequiredModules -Destination $Destination -Update -Prerelease
+Install-ModuleFast $RequiredModules -Destination $Destination -Update -Prerelease -NoProfileUpdate
 # I probably have tools I should be auto-upgrading, but Install-GithubRelease should track versions so I don't reinstall them unnecessarily
 Install-GithubRelease rsteube carapace-bin
