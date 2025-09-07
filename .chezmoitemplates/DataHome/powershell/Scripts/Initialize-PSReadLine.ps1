@@ -46,41 +46,42 @@ try {
     if ($IsVSCode) {
         # Stop VSCode from screwing with my prompt
         $global:__VSCodeOriginalPrompt = { Write-PowerlinePrompt }
-        Add-PowerLineBlock -Index 0 ([PoshCode.TerminalBlocks.Block]@{
-            MyInvocation = " " # this is a trick to make sure it doesn't export :)
-            Caps         = ""
-            Content      = {
-                if (($MyInvocation.HistoryId -gt 1) -and ($global:LastHistoryId -ne ($global:LastHistoryId = $MyInvocation.HistoryId))) {
-                    # Add command-line to history
-                    # OSC 633 ; E [; <CommandLine>] ST
-                    "$([char]0x1b)]633;E;$((Get-History -Id ($MyInvocation.HistoryId -1) -ErrorAction Ignore).CommandLine.Replace("\", "\\").Replace("`n", "\x0a").Replace(";", "\x3b"))`a"
-                }
-            }
-            DefaultBackgroundColor = [PoshCode.TerminalBlocks.Block]::DefaultColor
-            DefaultForegroundColor = [PoshCode.TerminalBlocks.Block]::DefaultColor
-        })
-        # Set IsWindows property
-        [Console]::Write("$([char]0x1b)]633;P;IsWindows=$($IsWindows)`a")
-
-        # Remap key handlers to the VSCode compatible keybindings
-        function Copy-PSReadlineKeyHandler {
-            param ([string[]]$OldChord, [string[]]$NewChord)
-            try {
-                $Handler = Get-PSReadLineKeyHandler -Chord $OldChord | Select-Object -First 1
-            } catch [System.Management.Automation.ParameterBindingException] {
-                # PowerShell 5.1 ships with PSReadLine 2.0.0 which does not have -Chord,
-                # so we check what's bound and filter it.
-                $Handler = Get-PSReadLineKeyHandler -Bound | Where-Object -FilterScript { $_.Key -eq $OldChord } | Select-Object -First 1
-            }
-            if ($Handler) {
-                Set-PSReadLineKeyHandler -Chord $NewChord -Function $Handler.Function
+    }
+    # Terminal integration: Add command line to terminal history
+    Add-PowerLineBlock -Index 0 ([PoshCode.TerminalBlocks.Block]@{
+        MyInvocation = " " # this is a trick to make sure it doesn't export :)
+        Caps         = ""
+        Content      = {
+            if (($MyInvocation.HistoryId -gt 1) -and ($global:LastHistoryId -ne ($global:LastHistoryId = $MyInvocation.HistoryId))) {
+                # Add command-line to history
+                # OSC 633 ; E [; <CommandLine>] ST
+                "$([char]0x1b)]633;E;$((Get-History -Id ($MyInvocation.HistoryId -1) -ErrorAction Ignore).CommandLine.Replace("\", "\\").Replace("`n", "\x0a").Replace(";", "\x3b"))`a"
             }
         }
-        Copy-PSReadlineKeyHandler 'Ctrl+Spacebar' 'F12,a'
-        Copy-PSReadlineKeyHandler 'Alt+Spacebar' 'F12,b'
-        Copy-PSReadlineKeyHandler 'Shift+Enter' 'F12,c'
-        Copy-PSReadlineKeyHandler 'Shift+End' 'F12,d'
+        DefaultBackgroundColor = [PoshCode.TerminalBlocks.Block]::DefaultColor
+        DefaultForegroundColor = [PoshCode.TerminalBlocks.Block]::DefaultColor
+    })
+    # Set IsWindows property
+    [Console]::Write("$([char]0x1b)]633;P;IsWindows=$($IsWindows)`a")
+
+    # Remap key handlers to the VSCode compatible keybindings
+    function Copy-PSReadlineKeyHandler {
+        param ([string[]]$OldChord, [string[]]$NewChord)
+        try {
+            $Handler = Get-PSReadLineKeyHandler -Chord $OldChord | Select-Object -First 1
+        } catch [System.Management.Automation.ParameterBindingException] {
+            # PowerShell 5.1 ships with PSReadLine 2.0.0 which does not have -Chord,
+            # so we check what's bound and filter it.
+            $Handler = Get-PSReadLineKeyHandler -Bound | Where-Object -FilterScript { $_.Key -eq $OldChord } | Select-Object -First 1
+        }
+        if ($Handler) {
+            Set-PSReadLineKeyHandler -Chord $NewChord -Function $Handler.Function
+        }
     }
+    Copy-PSReadlineKeyHandler 'Ctrl+Spacebar' 'F12,a'
+    Copy-PSReadlineKeyHandler 'Alt+Spacebar' 'F12,b'
+    Copy-PSReadlineKeyHandler 'Shift+Enter' 'F12,c'
+    Copy-PSReadlineKeyHandler 'Shift+End' 'F12,d'
 } catch {
     Write-Warning "Failed to add terminal blocks to prompt."
 }
