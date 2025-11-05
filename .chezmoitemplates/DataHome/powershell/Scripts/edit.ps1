@@ -270,7 +270,7 @@ begin {
                         $NewWindowSwitch = "--new-window"
                     }
                     "code" {
-                        $Parameters = "--wait"
+                        $Parameters = ""
                         $WaitSwitch = "--wait"
                         $NewWindowSwitch = "--new-window"
                     }
