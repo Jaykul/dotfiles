@@ -13,13 +13,13 @@
       { "name": "Mark Pink",              "id": "User.addMark.Magenta",        "command": { "action": "addMark", "color": "#FF00FF" }},
       { "name": "Mark Green",             "id": "User.addMark.Green",          "command": { "action": "addMark", "color": "#00FF00" }},
       { "name": "Mark Blue",              "id": "User.addMark.Blue",           "command": { "action": "addMark", "color": "#0000FF" }},
-      { "name": "Shell completions",      "id": "User.sendInput.Complete",     "command": { "action": "sendInput", "input": "\u001b[24~b" }},
       { "name": "New Tab PowerShell",     "id": "User.newTab.PowerShell",      "command": { "action": "newTab", "profile": "Windows PowerShell", "tabColor": "#336699" } },
       { "name": "Split Pane PowerShell",  "id": "User.splitPane.WPowerShell",  "command": { "action": "splitPane", "profile": "Windows PowerShell", "split": "auto"} },
       { "name": "New Tab Ubuntu",         "id": "User.newTab.Ubuntu",          "command": { "action": "newTab", "profile": "Ubuntu", "tabColor": "#4b0631" } },
       { "name": "Split Pane Ubuntu",      "id": "User.splitPane.Ubuntu",       "command": { "action": "splitPane", "profile": "Ubuntu", "split": "auto"} },
       { "name": "New Tab Pwsh",           "id": "User.newTab.Pwsh",            "command": { "action": "newTab", "profile": "PwSh", "tabColor": "#012456" } },
       { "name": "Split Pane Pwsh",        "id": "User.splitPane.Pwsh",         "command": { "action": "splitPane", "profile": "PwSh", "split": "auto"} }
+      { "name": "Shell completions",      "id": "User.sendInput.Complete",     "command": { "action": "sendInput", "input": "" }},
     ],
     "keybindings":[
       { "keys": "ctrl+f",            "id": "Terminal.FindText" },
@@ -63,10 +63,12 @@
     "compatibility.allowHeadless": true,
     "compatibility.enableUnfocusedAcrylic": false,
     "copyFormatting": "all",
-    "copyOnSelect": false,
+    "copyOnSelect": true,
     "debugFeatures": false,
     "defaultProfile": "{a3a2e83a-884a-5379-baa8-16f193a13b21}",
+    "experimental.enableColorSelection": true,
     "experimental.enableShellCompletionMenu": true,
+    "experimental.useBackgroundImageForWindow": false,
     "initialRows": 65,
     "minimizeToNotificationArea": false,
     "newTabMenu":
