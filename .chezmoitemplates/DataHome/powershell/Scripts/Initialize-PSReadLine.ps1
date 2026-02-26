@@ -132,24 +132,82 @@ Set-PSReadLineKeyHandler -Key Alt+w {
     [ReadLine]::RevertLine()
 } -Description "Save current line in history but do not execute"
 
-Set-PSReadLineKeyHandler '(', '{', '"', "'" {
+Set-PSReadLineKeyHandler '{' {
     param($key, $arg)
 
-    $closeChar = switch ($key.KeyChar) {
-        '(' { [char]')'; break }
-        # '{' { [char]'}'; break }
-        '[' { [char]']'; break }
-        '"' { [char]'"'; break }
-        "'" { [char]"'"; break }
-    }
+    $command = $null
+    $cursor = $null
+    [ReadLine]::GetBufferState([ref]$command, [ref]$cursor)
 
     $start = $null
     $length = $null
     [ReadLine]::GetSelectionState([ref]$start, [ref]$length)
 
+    # Text is selected, wrap it in brackets
+    if ($start -ne -1) {
+        [ReadLine]::Replace($start, $length, $key.KeyChar + $command.SubString($start, $length) + "}")
+        [ReadLine]::SetCursorPosition($start + $length + 2)
+        return
+    }
+
+    # If it's a ${, we want to add a closing } so tab completion works for you :-)
+    if ($key.KeyChar -eq "{" -and $cursor -ge 2 -and $command[$cursor - 1] -eq '$') {
+        [ReadLine]::Insert("{}")
+        [ReadLine]::SetCursorPosition($cursor + 1)
+        return
+    }
+
+    # Otherwise, just the character they typed
+    [ReadLine]::Insert("$($key.KeyChar)")
+    [ReadLine]::SetCursorPosition($cursor + 1)
+} -Description "Close variable braces"
+
+Set-PSReadLineKeyHandler 'Tab' {
+    param($key, $arg)
+    [ReadLine]::Complete($key, $arg)
+
     $command = $null
     $cursor = $null
     [ReadLine]::GetBufferState([ref]$command, [ref]$cursor)
+
+    # If we completed a ${drive:} let's put the cursor back inside the braces
+    if ($command[$cursor - 2] -eq ':' -and $command[$cursor - 1] -eq '}') {
+        [ReadLine]::SetCursorPosition($cursor - 1)
+    }
+} -Description 'Make TabExpansion work better with ${drive:path}'
+
+Set-PSReadLineKeyHandler 'Ctrl+Spacebar' {
+    param($key, $arg)
+    [ReadLine]::MenuComplete($key, $arg)
+
+    $command = $null
+    $cursor = $null
+    [ReadLine]::GetBufferState([ref]$command, [ref]$cursor)
+
+    # If we completed a ${drive:} let's put the cursor back inside the braces
+    if ($command[$cursor - 2] -eq ':' -and $command[$cursor - 1] -eq '}') {
+        [ReadLine]::SetCursorPosition($cursor - 1)
+    }
+} -Description 'Make TabExpansion work better with ${drive:path}'
+
+Set-PSReadLineKeyHandler '(', '"', "'" { # not [ or { because those didn't feel good
+    param($key, $arg)
+
+    $command = $null
+    $cursor = $null
+    [ReadLine]::GetBufferState([ref]$command, [ref]$cursor)
+
+    $start = $null
+    $length = $null
+    [ReadLine]::GetSelectionState([ref]$start, [ref]$length)
+
+    $closeChar = switch ($key.KeyChar) {
+        '(' { [char]')'; break }
+        '"' { [char]'"'; break }
+        "'" { [char]"'"; break }
+        '{' { [char]'}'; break }
+        '[' { [char]']'; break }
+    }
 
     if ($start -ne -1) {
         # Text is selected, wrap it in brackets
@@ -411,38 +469,6 @@ Set-PSReadLineKeyHandler "alt+k" {
         [ReadLine]::SetCursorPosition(8)
     }
 } -Description "macro: kubectl --context <current-context> --namespace demos"
-
-Set-PSReadLineKeyHandler "Alt+x" -Description "Expand aliases" {
-    param($key, $arg)
-
-    $ast = $null
-    $tokens = $null
-    $errors = $null
-    $cursor = $null
-    [ReadLine]::GetBufferState([ref]$ast, [ref]$tokens, [ref]$errors, [ref]$cursor)
-    [array]::Reverse($tokens)
-    foreach ($token in $tokens) {
-        if ($token.TokenFlags -band [System.Management.Automation.Language.TokenFlags]::CommandName) {
-            $command = $token.Extent.Text
-            $limit = 5 # recurse aliases of aliases, but don't get carried away
-            while ($command -and ($alias = $ExecutionContext.InvokeCommand.GetCommand($command, 'Alias'))) {
-                if ($alias.ResolvedCommandName) {
-                    $command = $alias.ResolvedCommandName
-                    if (($limit--) -gt 0) {
-                        continue
-                    }
-                }
-                break
-            }
-
-            $extent = $token.Extent
-            $length = $extent.EndOffset - $extent.StartOffset
-            [ReadLine]::Replace($extent.StartOffset, $length, $command)
-        }
-    }
-    [ReadLine]::GetBufferState([ref]$ast, [ref]$cursor)
-    [ReadLine]::SetCursorPosition($ast.Length)
-}
 
 Set-PSReadLineKeyHandler "Alt+x" -Description "Expand aliases" {
     param($key, $arg)
