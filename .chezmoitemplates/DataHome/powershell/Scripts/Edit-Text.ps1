@@ -1,6 +1,4 @@
-
 <#PSScriptInfo
-
 .VERSION 4.1
 
 .GUID 23eb26e7-5758-4b73-b9f9-c4ae0d611a53
@@ -21,7 +19,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 .LICENSEURI
 
-.PROJECTURI http://GitHub.com/PoshCode/ModuleBuilder
+.PROJECTURI
 
 .ICONURI
 
@@ -53,13 +51,27 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     .DESCRIPTION
         The edit command lets you open a folder, a file, or even a script function from your session in your favorite text editor.
 
-        It opens the specified function in the editor that you specify, and when you finish editing the function and close the editor, the script updates the function in your session with the new function code.
+        Functions are tricky to edit, because most code editors require a file, and determine syntax highlighting based on the extension of that file. This edit function creates a temporary file with the function code. When called with a function, it opens the specified function in the editor that you specify, and when you finish editing the function and close the editor, the script updates the function in your session with the new function code.
 
-        Functions are tricky to edit, because most code editors require a file, and determine syntax highlighting based on the extension of that file. edit creates a temporary file with the function code.
+        The default syntax is for editing a file. You can add `-Wait` or `-NewWindow` if you want them.
 
-        If you have a favorite editor, you can use the Editor parameter to specify it once, and the script will save it as your preference. If you don't specify an editor, it tries to determine an editor using the PSEditor preference variable, the EDITOR environment variable, or your configuration for git.  As a fallback it searches for Sublime, and finally falls back to Notepad.
+        When you `edit` a folder, it automatically adds `-NewWindow` because it's almost always confusing to take over an editor session with a whole folder.
+
+        When you `edit` a function, it automatically adds `-Wait` because we need to wait for you to close the file so we can update the function in your session.
 
         REMEMBER: Because functions are specific to a session, your function edits are lost when you close the session unless you save them in a permanent file, such as your Windows PowerShell profile.
+
+        If you have a favorite editor, you can fully configure it by setting $PSEditor to a custom object. For example, here's the PSEditor object for VS Code:
+
+            $PSEditor = [PSCustomObject]@{
+                PSTypeName      = "PSEditor"
+                Command         = "code" # or "code-insiders"
+                Parameters      = ""
+                WaitSwitch      = "--wait"
+                NewWindowSwitch = "--new-window"
+            }
+
+        If you set $PSEditor, the edit function will always use that editor instead of searching. Otherwise, it tries to determine an editor using the PSEditor preference variable, the EDITOR environment variable, or even your configuration for git. As a fallback it searches for Sublime, and finally falls back to Notepad.
 
     .EXAMPLE
         edit Prompt
@@ -71,25 +83,20 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
         Pipes all functions starting with cd to edit, which opens them one at a time in a new sublime window (opens each one after the other closes).
 
-    .EXAMPLE
-        Get-Command TabExpan* | edit -Editor 'C:\Program Files\SAPIEN Technologies, Inc\PowerShell Studio 2014\PowerShell Studio.exe
-
-        Edits the TabExpansion and/or TabExpansion2 (whichever exists) in PowerShell Studio 2014 using the full path to the .exe file.
-        Note that this also sets PowerShell Studio as your default editor for future calls.
-
     .NOTES
         The EditFunction is probably going into the ModuleBuilder module, but for now, here it is.
         By Joel Bennett (@Jaykul) and June Blender (@juneb_get_help)
 
-        If you'd like anything changed, contact me on Discord (https://discord.gg/PowerShell), Twitter (@Jaykul), Mastodon (@Jaykul@fosstodon.org) or BlueSky (@Jaykul.PowerShell.Social)
-        - Do you not like that I make every editor the default?
+        - Do you not like that I make whatever editor I find the default?
         - Think I should detect another editor?
+
+        If you'd like anything changed, contact me on Discord (https://discord.gg/PowerShell), Twitter (@Jaykul), Mastodon (@Jaykul@fosstodon.org) or BlueSky (@Jaykul.PowerShell.Social)
 
         About ISE: it doesn't support waiting for the editor to close, so I can't really support it...
         If you're sure you don't care about that, and want to use PowerShell ISE, you can set it in $PSEditor or pass it as a parameter.
 #>
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "")]
-[Alias("Edit-Code")]
+[Alias("edit", "Edit-Code")]
 [CmdletBinding(DefaultParameterSetName = "Command")]
 param (
     # Specifies the name of a function or script to create or edit. Enter a function name or pipe a function to edit.
@@ -156,7 +163,7 @@ begin {
             [Parameter(Mandatory = $true)]
             [string]$Command
         )
-        $Parts = @($Command -Split " ")
+        $Parts = @($Command -split " ")
 
         for ($count = 0; $count -lt $Parts.Length; $count++) {
             $Editor = ($Parts[0..$count] -join " ").Trim("'", '"')
@@ -189,8 +196,10 @@ begin {
             $Editor = $(
                 if ($global:PSEditor.Command) {
                     $global:PSEditor.Command
-                } else {
+                } elseif ($global:PSEditor) {
                     $global:PSEditor
+                } elseif (Test-Path Env:EDITOR) {
+                    $Env:EDITOR
                 }
             ),
 
@@ -200,8 +209,10 @@ begin {
             [Parameter(Position = 2)]
             [System.String]
             $Parameters = $global:PSEditor.Parameters,
+
             # The string for the switch that tells the editor we're waiting for this tab to close. E.g.: "--wait" or "-w"
             $WaitSwitch = $global:PSEditor.WaitSwitch,
+
             # The string for the switch that tells the editor to open a new window. E.g.: "--new-window" or "-n"
             $NewWindowSwitch = $global:PSEditor.NewWindowSwitch
         )
@@ -241,12 +252,12 @@ begin {
                 # Search the slow way for sublime
                 Write-Verbose "Editor still not found, getting desperate:"
                 if (($Editor = Get-Item "C:\Program Files\Sublime Text\subl.exe" -ErrorAction Ignore | Select-Object -First 1) -or
-                ($Editor = Get-ChildItem C:\Program*\* -Recurse -Filter "subl.exe" -ErrorAction Ignore | Select-Object -First 1)) {
+                    ($Editor = Get-ChildItem C:\Program*\* -Recurse -Filter "subl.exe" -ErrorAction Ignore | Select-Object -First 1)) {
                     break
                 }
 
                 if (($Editor = Get-ChildItem "C:\Program Files\Notepad++\notepad++.exe" -Recurse -Filter "notepad++.exe" -ErrorAction Ignore | Select-Object -First 1) -or
-                ($Editor = Get-ChildItem C:\Program*\* -Recurse -Filter "notepad++.exe" -ErrorAction Ignore | Select-Object -First 1)) {
+                    ($Editor = Get-ChildItem C:\Program*\* -Recurse -Filter "notepad++.exe" -ErrorAction Ignore | Select-Object -First 1)) {
                     break
                 }
 
@@ -302,9 +313,9 @@ begin {
                 $global:PSEditor = $PSEditor
 
                 # Store it stickily in the environment variable
-                if (![Environment]::GetEnvironmentVariable("Editor", "User")) {
-                    Write-Verbose "Setting user environment variable: Editor"
-                    [Environment]::SetEnvironmentVariable("Editor", "$PSEditor", "User")
+                if (![Environment]::GetEnvironmentVariable("EDITOR", "User")) {
+                    Write-Verbose "Setting user environment variable: EDITOR"
+                    [Environment]::SetEnvironmentVariable("EDITOR", "$PSEditor", "User")
                 }
             }
             return $PSEditor
@@ -389,7 +400,7 @@ process {
         # If the folder doesn't exist, die
         $Files = @(
             if ($Folder -and -not (Resolve-Path $Folder -ErrorAction Ignore)) {
-                Write-Error "The path '$Folder' doesn't exist, so we cannot create '$FileName' there"
+                Write-Error "The path '$Folder' doesn't exist, so we will not create '$FileName' there"
                 return
             } elseif ($FileName -notmatch $NonFileCharacters) {
                 foreach ($F in Resolve-Path $Folder -ErrorAction Ignore) {
@@ -433,7 +444,18 @@ process {
 
             # If it's a temp file, they're editing a function, so we have to wait!
             if ($File.EndsWith(".tmp.ps1") -and $File.StartsWith(([IO.Path]::GetTempPath()))) {
+                if ($PSEditor.WaitSwitch -and -not $Parameters.contains($PSEditor.WaitSwitch)) {
+                    Write-Verbose "Adding $($PSEditor.WaitSwitch) to parameters because it's a function"
+                    $Parameters += " $($PSEditor.WaitSwitch)"
+                }
                 $NoWait = $false
+            }
+            # If it's a folder, and they didn't explicitly set NewWindow, set it to true
+            if ((Get-Item $File).PSIsContainer -and -not $NewWindow.IsPresent) {
+                if ($PSEditor.NewWindowSwitch -and -not $Parameters.contains($PSEditor.NewWindowSwitch)) {
+                    Write-Verbose "Adding $($PSEditor.NewWindowSwitch) to parameters because it's a folder"
+                    $Parameters += " $($PSEditor.NewWindowSwitch)"
+                }
             }
 
             # Avoid errors if Parameter is null/empty.
