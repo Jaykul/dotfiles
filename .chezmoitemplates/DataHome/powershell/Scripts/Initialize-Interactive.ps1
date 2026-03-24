@@ -1,7 +1,7 @@
 # We need to force encoding to UTF8 for PSReadLine to do the right thing with extended characters
 # But we need to make sure it's UTF8-NoBOM
 [Console]::OutputEncoding = [Console]::InputEncoding = $OutputEncoding = [System.Text.UTF8Encoding]::new()
-$global:IsVSCode = $ENV:TERM_PROGRAM -eq "vscode"
+
 
 # Just a handful of additional TypeAccelerators
 $xlr8r = [psobject].assembly.gettype("System.Management.Automation.TypeAccelerators")
