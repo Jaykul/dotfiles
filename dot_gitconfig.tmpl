@@ -9,6 +9,9 @@
 	editor = code-insiders --wait
 	sshCommand = \"C:/Windows/System32/OpenSSH/ssh.exe\"
 	pager = delta
+{{ if eq .chezmoi.os "windows" -}}
+	longpaths = true
+{{- end }}
 
 [delta]
 	true-color = "always"
@@ -51,7 +54,7 @@
 	diffFilter = delta --color-only
 [merge]
 	tool = vscode
-    conflictstyle = diff3
+	conflictstyle = diff3
 [mergetool "vscode"]
 	cmd = code-insiders --wait --merge $REMOTE $LOCAL $BASE $MERGED
 [diff]
@@ -63,6 +66,8 @@
 	defaultBranch = main
 
 {{ if eq .chezmoi.username "LD\\joelbennett" -}}
+[credential]
+	gitHubAccountFiltering = false
 [credential "https://tfs"]
 	provider = generic
 [credential "https://tfs.ld.corp.local"]

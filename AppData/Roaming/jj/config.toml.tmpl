@@ -1,0 +1,17 @@
+#:schema https://docs.jj-vcs.dev/latest/config-schema.json
+
+[user]
+name = "Joel Bennett"
+email = "{{ .email }}"
+
+[working-copy]
+eol-conversion = "input-output"
+
+[ui]
+pager = "delta"
+editor = "code-insiders.cmd --wait"
+diff-formatter = ":git"
+paginate = "auto"
+
+[revset-aliases]
+HEAD = "@"
