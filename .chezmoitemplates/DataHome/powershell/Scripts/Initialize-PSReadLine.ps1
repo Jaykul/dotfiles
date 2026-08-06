@@ -190,45 +190,55 @@ Set-PSReadLineKeyHandler 'Ctrl+Spacebar' {
     }
 } -Description 'Make TabExpansion work better with ${drive:path}'
 
-Set-PSReadLineKeyHandler '(', '"', "'" { # not [ or { because those didn't feel good
+Set-PSReadLineKeyHandler '(', '"', "'" { # not [ or { because those didn't feel right
     param($key, $arg)
-
-    $command = $null
-    $cursor = $null
-    [ReadLine]::GetBufferState([ref]$command, [ref]$cursor)
 
     $start = $null
     $length = $null
     [ReadLine]::GetSelectionState([ref]$start, [ref]$length)
 
+    $command = $null
+    $cursor = $null
+    [ReadLine]::GetBufferState([ref]$command, [ref]$cursor)
+
     $closeChar = switch ($key.KeyChar) {
         '(' { [char]')'; break }
-        '"' { [char]'"'; break }
-        "'" { [char]"'"; break }
         '{' { [char]'}'; break }
         '[' { [char]']'; break }
+        default { $key.KeyChar; break }
     }
 
     if ($start -ne -1) {
-        # Text is selected, wrap it in brackets
-        [ReadLine]::Replace($start, $length, $key.KeyChar + $command.SubString($start, $length) + $closeChar)
-        [ReadLine]::SetCursorPosition($start + $length + 2)
-    } elseif ($cursor -eq 0 -and $command.length) {
+        # Text is selected, wrap it ...
+        [ReadLine]::Replace($start, $length, "$($key.KeyChar)$($command.SubString($start, $length))$closeChar")
+        # This is a hack to work around the fact that PSReadLine doesn't have a "clear selection" function
+        # Move the cursor, then Exchange, then Move again
+        [ReadLine]::SetCursorPosition($start + 1)
+        [ReadLine]::ExchangePointAndMark()
+        [ReadLine]::SetCursorPosition($start + 1)
+        [ReadLine]::SelectForwardChar($key, $length)
+        return
+    }
+
+    if ($cursor -eq 0 -and $command.length) {
         # Cursor's at the start of the command, wrap the whole command
-        [ReadLine]::Replace(0, $command.length, $key.KeyChar + $command + $closeChar)
-        [ReadLine]::SetCursorPosition($command.length + 2)
-    } elseif ($cursor -eq $command.length) {
-        # If we're at the end, do a matching pair
+        [ReadLine]::Replace(0, $command.length, "$($key.KeyChar)$command$closeChar")
+        [ReadLine]::SetCursorPosition($cursor)
+    } elseif ($cursor -ge $command.length) {
+        # If we're at the end, add a matching pair
         [ReadLine]::Insert("$($key.KeyChar)$closeChar")
         [ReadLine]::SetCursorPosition($cursor + 1)
+    } elseif (('"', "'", '`' -contains $key.KeyChar) -and $command[$cursor] -eq $key.KeyChar) {
+        [ReadLine]::SetCursorPosition($cursor + 1)
+        return
     } else {
         # Otherwise, just the character they typed
-        [ReadLine]::Insert("$($key.KeyChar)")
+        [ReadLine]::Insert($key.KeyChar)
         [ReadLine]::SetCursorPosition($cursor + 1)
     }
 } -Description "Insert matching braces and quotes"
 
-Set-PSReadLineKeyHandler ')', '}', '"', "'" {
+Set-PSReadLineKeyHandler ')', '}' {
     param($key, $arg)
 
     $command = $null
@@ -238,22 +248,14 @@ Set-PSReadLineKeyHandler ')', '}', '"', "'" {
     # If the _next_ character matches this one, just move past it
     if ($command[$cursor] -eq $key.KeyChar) {
         [ReadLine]::SetCursorPosition($cursor + 1)
-    } else {
-        [ReadLine]::Insert("$($key.KeyChar)")
     }
 
     # For unmatched closing parenthesis, wrap the whole command
-    if ($key.KeyChar -eq ')') {
-        $tokens = $null
-        $parseError = $null
-        $ast = $null
-        $cursor = $null
-        [ReadLine]::GetBufferState([ref]$ast, [ref]$tokens, [ref]$parseError, [ref]$cursor)
-        # but only if it's at the VERY end
-        if ($parseError.Extent.Text -eq $key.KeyChar -and $parseError.Extent.EndOffset -eq $cursor) {
-            [ReadLine]::Replace(0, $ast.Extent.EndOffset, "($command)" )
-            [ReadLine]::SetCursorPosition($command.length + 2)
-        }
+    if ($key.KeyChar -eq ')' -and $cursor -ge $command.length) {
+        [ReadLine]::Replace(0, $command.length, "($command)")
+        [ReadLine]::SetCursorPosition($command.length + 2)
+    } else {
+        [ReadLine]::Insert($key.KeyChar)
     }
 } -Description "Insert or skip closing brace or wrap!"
 
