@@ -3,3 +3,6 @@
 # profile hash: {{ include ".chezmoitemplates/DataHome/powershell/Scripts/Update-PSModulePath.ps1" | sha256sum }}
 Remove-Item "*.PSModulePath.env"
 Remove-Item "*.Path.env"
+
+Remove-Item "/home/jaykul/.config/powershell/*.PSModulePath.env"
+Remove-Item "/home/jaykul/.config/powershell/*.Path.env"

@@ -79,7 +79,7 @@ function Select-UniquePath {
             ) |
                 # Because Convert-Path will not resolve hidden folders, like C:\ProgramData*\ ...
                 # Use Get-Item -Force to ensure we don't loose hidden folders
-                Get-Item -Force |
+                Get-Item -Force -ErrorAction Ignore |
                 # But make sure we didn't add anything that wasn't already there
                 # ! This makes us sensitive to the \ vs / in paths
                 Where-Object { $_.FullName -iin $inputPaths } |
@@ -119,56 +119,54 @@ function Select-UniquePath {
 # 3. I don't worry about missing paths, because `Select-UniquePath` takes care of it
 # 4. I don't worry about x86 because I never use it.
 
-
-# Before paths that are next to my $profile, I want a path that's outside of my documents folder, and thus, outside OneDrive
-@("$DataHome\powershell\Modules"
-# Then, the normal location next my $profile:
-[IO.Path]::Combine($ProfileDir, "Modules")
-# Finally, this version's PSHome
-[IO.Path]::Combine($PSHome, "Modules")) +
-# Then we can use whatever was in the PSModulePath environment variable
 @(
+    # On Linux, this is the default user location
+    "$DataHome/powershell/Modules"
+    if (!$IsMacOS -and !$IsLinux) {
+        # On Windows, this is the default user location
+        [IO.Path]::Combine($ProfileDir, "Modules")
+        # On Windows, this is the default machine location
+        "$Env:ProgramFiles\PowerShell\Modules"
+    } else {
+        # On Linux and MacOS, this is the default machine location
+        "/usr/local/share/powershell/Modules"
+    }
+    # Finally, this version's PSHome
+    [IO.Path]::Combine($PSHome, "Modules")
+    # AFTER THESE LOCATIONS, we consider the existing PSModulePath and other locations
+    # Then we can use whatever was in the PSModulePath environment variable
     # But I don't just use $ENV:PSModulePath, because I overwrite it in my profile with cached output from this!
     if ($Env:PSModulePath_Before) {
         $Env:PSModulePath_Before
-    } else {
-        if (($M=[System.Environment]::GetEnvironmentVariable("PSMODULEPATH", "Machine"))){ $M }
-        if (($M=[System.Environment]::GetEnvironmentVariable("PSMODULEPATH", "User"))){ $M }
+    } elseif($Env:PSModulePath) {
+        $Env:PSModulePath
     }
-) +
-
-# If we're on Windows, just to make sure we don't miss anything
-# Add the Module paths for other PowerShell versions down here
-$(if (!$IsMacOS -and !$IsLinux) {
-@(Convert-Path @(
-        [IO.Path]::Combine([IO.Path]::GetDirectoryName($ProfileDir), "*PowerShell\Modules")
-        # These may be duplicate or not exist, but it doesn't matter
-        "$Env:ProgramFiles\*PowerShell\Modules"
-        "$Env:ProgramFiles\*PowerShell\*\Modules"
-        "$Env:SystemRoot\System32\*PowerShell\*\Modules"
-    ))
-}) +
-    # This is likely to result in duplicates, but we'll remove those at the end
-@(Get-ChildItem ([IO.Path]::Combine([IO.Path]::GetDirectoryName([IO.Path]::GetDirectoryName($PSHome)), "*PowerShell")) -Filter Modules -Recurse -Depth 2).FullName +
-# Put my ~\Projects\Modules on the end, so I can load my dev builds by version number when I want to
-@("$Home\Projects\Modules") +
-# Finally, to avoid duplicates and ensure canonical path case, pass it all through Select-UniquePath, set ENV and cache it on disc
-@() | Select-UniquePath -OutPathName Env:PSModulePath -OutPathNameAsArray $PSModulePathFile -CaseInsensitive:$CaseInsensitive -RemoveNonExistent
+    # If we're on Windows, just to make sure we don't miss anything
+    # Add all the Module paths for other PowerShell versions down here at the bottom
+    if (!$IsMacOS -and !$IsLinux) {
+        @(Convert-Path @(
+            [IO.Path]::Combine([IO.Path]::GetDirectoryName($ProfileDir), "*PowerShell\Modules")
+            [IO.Path]::Combine([IO.Path]::GetDirectoryName([IO.Path]::GetDirectoryName($PSHome)), "*PowerShell\Modules")
+            # These may be duplicate or not exist, but it doesn't matter
+            "$Env:ProgramFiles\*PowerShell\Modules"
+            "$Env:ProgramFiles\*PowerShell\*\Modules"
+            "$Env:SystemRoot\System32\*PowerShell\*\Modules"
+        ))
+    }
+    # Put my ~\Projects\Modules on the end, so I can load my dev builds by version number when I want to
+    "$Home/Projects/Modules"
+    # Finally, to avoid duplicates and ensure canonical path case, pass it all through Select-UniquePath, set ENV and cache it on disc
+) | Select-UniquePath -OutPathName Env:PSModulePath -OutPathNameAsArray $PSModulePathFile -CaseInsensitive:$CaseInsensitive -RemoveNonExistent
 
 # I want to make sure that THIS version's Scripts (and then other versions) path is in the PATH
-# But don't use $ENV:PATH here because I wiped it's original contents with previously cached output from here
-@($PSHOME) +
-@(
+    @(
     # Don't use $ENV:PATH, because I overwrite it in my profile with cached output from this
     if ($Env:PATH_Before) {
         $Env:PATH_Before
-    } else {
-        if (($M = [System.Environment]::GetEnvironmentVariable("PATH", "Machine"))) { $M }
-        if (($M = [System.Environment]::GetEnvironmentVariable("PATH", "User"))) { $M }
+    } elseif($ENV:PATH) {
+        $ENV:PATH
     }
-) +
-@("$DataHome\powershell\Scripts") +
-@([IO.Path]::Combine($ProfileDir, "Scripts")) +
-# Finally, to avoid duplicates and ensure canonical path case, pass it all through Select-UniquePath, set ENV and cache it on disc
-# Finally, to avoid duplicates and ensure canonical path case, pass it all through Select-UniquePath, set ENV and cache it on disc
-@() | Select-UniquePath -OutPathName Env:Path -OutPathNameAsArray $PathFile -CaseInsensitive:$CaseInsensitive -RemoveNonExistent
+    "$DataHome\powershell\Scripts"
+    [IO.Path]::Combine($ProfileDir, "Scripts")
+    # Finally, to avoid duplicates and ensure canonical path case, pass it all through Select-UniquePath, set ENV and cache it on disc
+) | Select-UniquePath -OutPathName Env:Path -OutPathNameAsArray $PathFile -CaseInsensitive:$CaseInsensitive -RemoveNonExistent

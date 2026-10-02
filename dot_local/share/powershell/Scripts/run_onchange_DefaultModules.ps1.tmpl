@@ -1,0 +1,5 @@
+#!/usr/bin/env pwsh
+# This script needs to install modules whenever I change the DefaultModules
+# profile hash: {{ include ".chezmoitemplates/DefaultModules.ps1" | sha256sum }}
+# profile hash: {{ include ".chezmoitemplates/DataHome/powershell/Scripts/Install-DefaultModules.ps1" | sha256sum }}
+./Install-DefaultModules.ps1

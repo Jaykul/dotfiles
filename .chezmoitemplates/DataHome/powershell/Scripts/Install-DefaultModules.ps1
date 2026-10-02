@@ -1,9 +1,8 @@
 #!/usr/bin/env pwsh
-# This script needs to install modules whenever I change the Initialize-Interactive script
-# profile hash: {{ include ".chezmoitemplates/DataHome/powershell/Scripts/Initialize-Interactive.ps1" | sha256sum }}
 $ErrorView = 'DetailedView'
 
 # It's time to switch to the DataHome AppData/Local location
+$DataHome = [Environment]::GetFolderPath("LocalApplicationData")
 $Destination = "$DataHome/powershell/Modules"
 
 {{ template "DefaultModules.ps1" . }}
@@ -25,26 +24,31 @@ $RequiredModules = $DefaultModules | ForEach-Object {
 }
 Write-Warning "Pre-installing $($RequiredModules.Count) modules: $($RequiredModules -join ', ')"
 
-# Bootstrap ModuleFast if it's not already installed
-if (!(Get-Module ModuleFast -ListAvailable -ErrorAction SilentlyContinue)) {
-    # $PSModulePaths = @("PSModulePaths:") + $env:PSModulePath.Split([IO.Path]::PathSeparator, [StringSplitOptions]::RemoveEmptyEntries)
-    # Write-Verbose $($PSModulePaths -join "`n  $($PSStyle.Formatting.Verbose)") -Verbose
 
-    Write-Verbose "ModuleFast not found. Installing to $($ModuleFastParam.Destination)" -Verbose
-    # This is on github's head because they ALWAYS redirect releases/latest, but they throttle the releases/latest API
-    $Response = Invoke-WebRequest https://github.com/JustinGrote/ModuleFast/releases/latest
-    $Version = (Split-Path $Response.Headers.Location -Leaf).TrimStart("v")
-    $File = "ModuleFast.$Version.zip"
-    $Url = "https://github.com/JustinGrote/ModuleFast/releases/download/v$Version/$File"
-    Write-Verbose "Installing $File from $Url" -Verbose
-    Invoke-WebRequest $Url -OutFile $File
-    Expand-Archive $File -DestinationPath $Destination
-    Remove-Item $File
+# If ModuleFast is not already installed, install it to $Destination
+if (!(Get-Module ModuleFast -ListAvailable -ErrorAction SilentlyContinue)) {
+    Write-Verbose "ModuleFast not found. Installing to $($Destination)" -Verbose
+    # When we get redirected beyond our limit, IWR throws
+    [string]$Location = try {
+        # Github redirects releases/latest, but throttles their API
+        Invoke-WebRequest https://github.com/JustinGrote/ModuleFast/releases/latest -UseBasicParsing -MaximumRedirection 0
+        "https://github.com/JustinGrote/ModuleFast/releases/tag/v0.6.0"
+    } catch {
+        $_.Exception.Response.Headers.location
+    }
+    $tag = Split-Path $Location -Leaf
+    $version = $tag.Trim("v")
+    $file = "ModuleFast.$version.zip"
+    $url = "https://github.com/JustinGrote/ModuleFast/releases/download/$tag/$file"
+    Write-Verbose "Installing $file from $url" -Verbose
+    Invoke-WebRequest $url -OutFile $file
+    Expand-Archive $file -DestinationPath $Destination
+    Remove-Item $file
 }
 
 # Since these scripts _may_ not already be installed:
 if (-not (Get-Command Install-GithubRelease -ErrorAction SilentlyContinue)) {
-    $Script = Install-Script -Name Install-GithubRelease -Scope CurrentUser -Force -PassThru -WarningAction SilentlyContinue -ReInstall
+    $Script = Install-Script -Name Install-GithubRelease -Scope CurrentUser -Force -PassThru -WarningAction SilentlyContinue
     if ($Env:PATH -split [IO.Path]::PathSeparator -notcontains $Script.InstalledLocation) {
         $ENV:PATH += ([IO.Path]::PathSeparator) + (Convert-Path $Script.InstalledLocation)
     }
