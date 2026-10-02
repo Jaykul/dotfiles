@@ -14,7 +14,10 @@ Documents
 {{ end }}
 
 
-# Ignore the whole AppData directory if we're not on Windows
+# AppData (non-Windows) / dot_local (Windows)
 {{ if not (eq .chezmoi.os "windows") }}
 AppData
+{{ end }}
+{{ if eq .chezmoi.os "windows" }}
+dot_local
 {{ end }}
