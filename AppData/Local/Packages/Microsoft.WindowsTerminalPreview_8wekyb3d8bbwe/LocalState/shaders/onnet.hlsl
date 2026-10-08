@@ -4,14 +4,30 @@ Texture2D shaderTexture : register(t0);
 Texture2D iconTexture : register(t1);
 SamplerState samplerState : register(s0);
 
+// Opacity of the rendered material layers (0..1)
+// Because of Windows's "acrylic" this mostly affects how intense the colors appear
 static const float OPACITY = 1.0;
+
+// Settings for the icon passed in through experimental.pixelShaderImagePath
 static const bool ICON_ENABLED = true;
 static const float ICON_OPACITY = 0.75;
 static const float ICON_SCALE = 1.0;
 static const float2 ICON_MARGIN = float2(0.0, 0.0);
+
+// When enabled, any pixels this color will be rendered as transparent
 static const bool CHROMA_KEY_ENABLED = true;
 static const float3 CHROMA_KEY = float3(0x21, 0x20, 0x21) / 255.0;
 static const float CHROMA_KEY_TOLERANCE = 0.5 / 255.0;
+
+// The glow/shadow effect for the text
+static const bool TEXT_EFFECT_ENABLED = true;
+static const float3 TEXT_EFFECT_COLOR = float3(0.0, 0.0, 0.0);
+static const float TEXT_EFFECT_OPACITY = 1.0;
+static const float TEXT_EFFECT_SOFTNESS = 0.7;
+// Doesn't look good above 3.0
+static const float TEXT_EFFECT_RADIUS = 3.0;
+// non-zero looks weird if you have a large radius
+static const float2 TEXT_EFFECT_OFFSET = float2(0.0, 0.0);
 
 // --------------------
 #if defined(WINDOWS_TERMINAL)
@@ -185,6 +201,53 @@ float4 iconLayer(float2 uv) {
   return iconTexture.SampleLevel(samplerState, iconUV, 0.0) * ICON_OPACITY;
 }
 
+float4 terminalLayer(float2 uv) {
+  float4 terminal = shaderTexture.Sample(samplerState, uv);
+  // Compare straight RGB; Terminal supplies premultiplied colors.
+  if (CHROMA_KEY_ENABLED && terminal.a > 0.0) {
+    float3 rgb = terminal.rgb / terminal.a;
+    if (all(abs(rgb - CHROMA_KEY) <= CHROMA_KEY_TOLERANCE)) {
+      return float4(0.0, 0.0, 0.0, 0.0);
+    }
+  }
+  return terminal;
+}
+
+float4 textEffectLayer(float2 uv) {
+  if (!TEXT_EFFECT_ENABLED || TEXT_EFFECT_OPACITY <= 0.0 || TEXT_EFFECT_RADIUS <= 0.0) {
+    return float4(0.0, 0.0, 0.0, 0.0);
+  }
+
+#if defined(WINDOWS_TERMINAL)
+  float dpiScale = Scale;
+#else
+  float dpiScale = 1.0;
+#endif
+  float2 pixel = dpiScale / RESOLUTION;
+  float2 center = uv - TEXT_EFFECT_OFFSET * pixel;
+  float2 radius = TEXT_EFFECT_RADIUS * pixel;
+  float2 diagonal = radius * 0.7071067812;
+
+  float centerAlpha = terminalLayer(center).a;
+  float left = terminalLayer(center - float2(radius.x, 0.0)).a;
+  float right = terminalLayer(center + float2(radius.x, 0.0)).a;
+  float up = terminalLayer(center - float2(0.0, radius.y)).a;
+  float down = terminalLayer(center + float2(0.0, radius.y)).a;
+  float upperLeft = terminalLayer(center - diagonal).a;
+  float lowerRight = terminalLayer(center + diagonal).a;
+  float upperRight = terminalLayer(center + float2(diagonal.x, -diagonal.y)).a;
+  float lowerLeft = terminalLayer(center + float2(-diagonal.x, diagonal.y)).a;
+
+  float outlineAlpha = max(max(max(left, right), max(up, down)),
+                           max(max(upperLeft, upperRight), max(lowerLeft, lowerRight)));
+  float blurredAlpha = (4.0 * centerAlpha
+                      + 2.0 * (left + right + up + down)
+                      + upperLeft + upperRight + lowerLeft + lowerRight) / 16.0;
+  float alpha = saturate(lerp(outlineAlpha, blurredAlpha, saturate(TEXT_EFFECT_SOFTNESS))
+                         * TEXT_EFFECT_OPACITY);
+  return float4(TEXT_EFFECT_COLOR * alpha, alpha);
+}
+
 //
 // PS_OUTPUT ps_main(in PS_INPUT In)
 #if defined(WINDOWS_TERMINAL)
@@ -204,19 +267,14 @@ float4 ps_main(float4 pos : SV_POSITION, float2 tex : TEXCOORD) : SV_TARGET
   vec3 col = effect(p, np);
   col = sRGB(col);
 
-  vec4 fg = shaderTexture.Sample(samplerState, q);
-  // Compare straight RGB; Terminal supplies premultiplied colors.
-  if (CHROMA_KEY_ENABLED && fg.a > 0.0) {
-    float3 rgb = fg.rgb / fg.a;
-    if (all(abs(rgb - CHROMA_KEY) <= CHROMA_KEY_TOLERANCE)) {
-      fg = float4(0.0, 0.0, 0.0, 0.0);
-    }
-  }
-
   float4 background = float4(col * OPACITY, OPACITY);
   float4 icon = iconLayer(q);
   background = icon + background * (1.0 - icon.a);
 
-  // Layer order: Onnet, optional icon, then terminal contents.
-  return fg + background * (1.0 - fg.a);
+  float4 textEffect = textEffectLayer(q);
+  float4 fg = terminalLayer(q);
+  float4 underText = textEffect + background * (1.0 - textEffect.a);
+
+  // Layer order: Onnet, optional icon, text effect, then terminal contents.
+  return fg + underText * (1.0 - fg.a);
 }
