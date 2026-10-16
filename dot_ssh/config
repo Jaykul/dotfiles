@@ -2,3 +2,4 @@ Host dads
   HostName dads
   User jaykul
   ForwardAgent yes
+  RequestTTY force
