@@ -15,13 +15,13 @@ $DataHome = [Environment]::GetFolderPath("LocalApplicationData")
 # I can run `Update-PSModulePath` any time, but I don't by default
 Set-Alias Update-PSModulePath $DataHome/powershell/Scripts/Update-PSModulePath.ps1
 # I just read the cached values from the last run
-if (Test-Path ($PSModulePathPath = [IO.Path]::ChangeExtension($Profile, "$Env:PSModulePath_Before"))) {
-    $Env:PSModulePath_Before = $Env:PSModulePath
+if (Test-Path ($PSModulePathPath = [IO.Path]::ChangeExtension($Profile, ".PSModulePath.env"))) {
+    $Env:PSModulePath_BEFORE = $Env:PSModulePath
     $Env:PSModulePath = @(Get-Content $PSModulePathPath) -join [IO.Path]::PathSeparator
 }
 if (Test-Path ($PathPath = [IO.Path]::ChangeExtension($Profile, ".Path.env"))) {
-    $Env:Path_Before = $Env:Path
-    $Env:Path = @(Get-Content $PathPath) -join [IO.Path]::PathSeparator
+    $Env:PATH_BEFORE = $Env:PATH
+    $Env:PATH = @(Get-Content $PathPath) -join [IO.Path]::PathSeparator
 } else {
     Update-PSModulePath
 }
