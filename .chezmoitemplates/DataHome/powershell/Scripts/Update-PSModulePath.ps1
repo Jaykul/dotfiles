@@ -40,7 +40,9 @@ function Select-UniquePath {
         # Force passing through output even when ArrayContentPaths or JoinContentPaths are specified
         [switch]$Passthru,
 
-        # The Path value is split by the delimiter. Defaults to '[IO.Path]::PathSeparator' so you can use this on $Env:Path
+        [System.IO.FileAttributes]$Attributes,
+
+        # The Path value is split by the delimiter. Defaults to '[IO.Path]::PathSeparator' so you can use this on $Env:PATH
         [Parameter(Mandatory = $False)]
         [AllowNull()]
         [string]$Delimiter = [IO.Path]::PathSeparator,
@@ -54,21 +56,31 @@ function Select-UniquePath {
         [switch]$RemoveNonExistent
     )
     begin {
-        # Write-Information "Select-UniquePath ENTER BEGIN $fg:red$Delimiter$fg:clear $Path" -Tags "Trace", "Enter", "Begin"
+        Write-Information "Select-UniquePath ENTER BEGIN $fg:red$Delimiter$fg:clear $Path" -Tags "Trace", "Enter", "Begin"
         # [string[]]$oldFolders = @()
         [System.Collections.Generic.List[string]]$inputPaths = @()
-        # Write-Information "Select-UniquePath EXIT BEGIN $fg:red$Delimiter$fg:clear $Path" -Tags "Trace", "Exit", "Begin"
+        Write-Information "Select-UniquePath EXIT BEGIN $fg:red$Delimiter$fg:clear $Path" -Tags "Trace", "Exit", "Begin"
     }
     process {
-        # Write-Information "Select-UniquePath ENTER PROCESS $fg:cyan$Path$fg:clear" -Tags "Trace", "Enter", "Process"
+        Write-Information "Select-UniquePath ENTER PROCESS $fg:cyan$Path$fg:clear" -Tags "Trace", "Enter", "Process"
         # Split and trim trailing slashes to normalize, and drop empty strings
-        $inputPaths.AddRange([string[]]($Path.Split($Delimiter).TrimEnd('\/').Where{$_ -gt ""}))
-        # Write-Information "Select-UniquePath EXIT PROCESS $fg:cyan$Path$fg:clear" -Tags "Trace", "Exit", "Process"
+        $inputPaths.AddRange([string[]]($Path.Split($Delimiter).TrimEnd('\/').Where{ $_ -gt "" }))
+        Write-Information "Select-UniquePath EXIT PROCESS $fg:cyan$Path$fg:clear" -Tags "Trace", "Exit", "Process"
     }
     end {
+        Write-Information "Select-UniquePath ENTER END" -Tags "Trace", "Enter", "End"
+        if ($VerbosePreference -eq "Continue") {
+            $VerboseMessage = @("`n  Path = $($inputPaths -join "`n         ")") + @(
+                @($PSBoundParameters.GetEnumerator()) |
+                    Where-Object { $_.Key -ne "Path" } |
+                    ForEach-Object { "`n  $($_.Key) = $($_.Value)" })
+            Write-Verbose "PSBoundParameters:$VerboseMessage"
+        }
         # Correct the case of all paths in PATH, even on Windows.
         [string[]]$outputPaths =
         if ($CaseInsensitive -or $RemoveNonExistent) {
+            # ! In order to not care about Windows \ vs Linux / slashes
+            # $slashyPaths = $inputPaths -replace '(\\|/)', ([System.IO.Path]::DirectorySeparatorChar)
             @(
                 if ($CaseInsensitive) {
                     # Using wildcards on every folder forces Windows to calculate the ACTUAL case of the path
@@ -81,9 +93,12 @@ function Select-UniquePath {
                 # Use Get-Item -Force to ensure we don't loose hidden folders
                 Get-Item -Force -ErrorAction Ignore |
                 # But make sure we didn't add anything that wasn't already there
-                # ! This makes us sensitive to the \ vs / in paths
-                Where-Object { $_.FullName -iin $inputPaths } |
-                ForEach-Object FullName
+                Where-Object {
+                    ([bool]$Match = $_.FullName -iin $inputPaths -and (-not $Attributes -or $Attributes -band $_.Attributes))
+                    if ($VerbosePreference -eq "Continue") {
+                        Write-Verbose "$Attributes $Match $($_.FullName)"
+                    }
+                } | ForEach-Object FullName
         } else {
             $inputPaths
         }
@@ -95,18 +110,17 @@ function Select-UniquePath {
         [string[]]$Result = [System.Linq.Enumerable]::Distinct($outputPaths, [StringComparer]::Ordinal)
 
         if ($OutPathNameAsArray) {
-            # Write-Information "Set-Content $fg:green$OutPathNameAsArray${fg:clear}:`n$($Result -join "`n")" -Tags "Trace"
+            Write-Verbose "Set-Content $fg:green$OutPathNameAsArray${fg:clear}:`n$($Result -join "`n")"
             Set-Content -Path $OutPathNameAsArray -Value $Result
         }
         if ($OutPathName) {
-            # Write-Information "Set-Content $fg:green$OutPathName${fg:clear}: $Result" -Tags "Trace"
+            Write-Verbose "Set-Content $fg:green$OutPathName${fg:clear}: $($Result -join "$fg:Red$Delimiter$fg:clear")"
             Set-Content -Path $OutPathName -Value ($Result -join $Delimiter)
         }
         if ($Passthru -or -not ($OutPathNameAsArray -or $OutPathName)) {
-            # Write-Information "${fg:Green}Passthru:$fg:clear $Result" -Tags "Trace"
             $Result
         }
-        # Write-Information "Select-UniquePath $fg:red$Delimiter$fg:clear $($Result -join "$fg:red$Delimiter$fg:clear")" -Tags "Trace", "Exit"
+        Write-Information "Select-UniquePath $fg:red$Delimiter$fg:clear $($Result -join "$fg:red$Delimiter$fg:clear")" -Tags "Trace", "Exit"
     }
 }
 
@@ -116,57 +130,63 @@ function Select-UniquePath {
 #     b. Current version before other versions
 #     c. Existing PSModulePath before other versions
 # 2. I don't worry about duplicates because `Select-UniquePath` takes care of it
-# 3. I don't worry about missing paths, because `Select-UniquePath` takes care of it
-# 4. I don't worry about x86 because I never use it.
+# 3. I don't worry about paths that don't exist, because `Select-UniquePath` takes care of it
 
+$Script:InformationActionPreference = $local:InformationActionPreference
+$script:VerbosePreference = $local:VerbosePreference
 @(
-    # On Linux, this is the default user location
-    "$DataHome/powershell/Modules"
+    # THIS is the Install-ModuleFast default location for modules
     if (!$IsMacOS -and !$IsLinux) {
-        # On Windows, this is the default user location
+        "$DataHome/powershell/Modules"
+        # On Windows, this is the default user location (which I hope doesn't have anything in it)
         [IO.Path]::Combine($ProfileDir, "Modules")
         # On Windows, this is the default machine location
         "$Env:ProgramFiles\PowerShell\Modules"
     } else {
+        "$DataHome\powershell\Modules"
         # On Linux and MacOS, this is the default machine location
         "/usr/local/share/powershell/Modules"
     }
-    # Finally, this version's PSHome
+    # Finally, the modules that shipped with this version of PowerShell
     [IO.Path]::Combine($PSHome, "Modules")
     # AFTER THESE LOCATIONS, we consider the existing PSModulePath and other locations
     # Then we can use whatever was in the PSModulePath environment variable
     # But I don't just use $ENV:PSModulePath, because I overwrite it in my profile with cached output from this!
-    if ($Env:PSModulePath_Before) {
-        $Env:PSModulePath_Before
-    } elseif($Env:PSModulePath) {
+    if ($Env:PSModulePath_BEFORE) {
+        $Env:PSModulePath_BEFORE
+    } elseif ($Env:PSModulePath) {
         $Env:PSModulePath
     }
     # If we're on Windows, just to make sure we don't miss anything
-    # Add all the Module paths for other PowerShell versions down here at the bottom
+    # Add the Module paths for other PowerShell versions down here at the bottom
     if (!$IsMacOS -and !$IsLinux) {
         @(Convert-Path @(
-            [IO.Path]::Combine([IO.Path]::GetDirectoryName($ProfileDir), "*PowerShell\Modules")
-            [IO.Path]::Combine([IO.Path]::GetDirectoryName([IO.Path]::GetDirectoryName($PSHome)), "*PowerShell\Modules")
-            # These may be duplicate or not exist, but it doesn't matter
-            "$Env:ProgramFiles\*PowerShell\Modules"
-            "$Env:ProgramFiles\*PowerShell\*\Modules"
-            "$Env:SystemRoot\System32\*PowerShell\*\Modules"
-        ))
+                [IO.Path]::Combine([IO.Path]::GetDirectoryName($ProfileDir), "*PowerShell\Modules")
+                [IO.Path]::Combine([IO.Path]::GetDirectoryName([IO.Path]::GetDirectoryName($PSHome)), "*PowerShell\Modules")
+                # These may be duplicate or not exist, but it doesn't matter
+                "$Env:ProgramFiles\*PowerShell\Modules"
+                "$Env:ProgramFiles\*PowerShell\*\Modules"
+                "$Env:SystemRoot\System32\*PowerShell\*\Modules"
+            ))
     }
     # Put my ~\Projects\Modules on the end, so I can load my dev builds by version number when I want to
-    "$Home/Projects/Modules"
+    if (!$IsMacOS -and !$IsLinux) {
+        "$Home\Projects\Modules"
+    } else {
+        "$Home/Projects/Modules"
+    }
     # Finally, to avoid duplicates and ensure canonical path case, pass it all through Select-UniquePath, set ENV and cache it on disc
-) | Select-UniquePath -OutPathName Env:PSModulePath -OutPathNameAsArray $PSModulePathFile -CaseInsensitive:$CaseInsensitive -RemoveNonExistent
+) | Select-UniquePath -OutPathName Env:PSModulePath -OutPathNameAsArray $PSModulePathFile -CaseInsensitive:$CaseInsensitive -RemoveNonExistent -Attributes Directory
 
 # I want to make sure that THIS version's Scripts (and then other versions) path is in the PATH
-    @(
+@(
     # Don't use $ENV:PATH, because I overwrite it in my profile with cached output from this
-    if ($Env:PATH_Before) {
-        $Env:PATH_Before
-    } elseif($ENV:PATH) {
+    if ($Env:PATH_BEFORE) {
+        $Env:PATH_BEFORE
+    } elseif ($ENV:PATH) {
         $ENV:PATH
     }
     "$DataHome\powershell\Scripts"
     [IO.Path]::Combine($ProfileDir, "Scripts")
     # Finally, to avoid duplicates and ensure canonical path case, pass it all through Select-UniquePath, set ENV and cache it on disc
-) | Select-UniquePath -OutPathName Env:Path -OutPathNameAsArray $PathFile -CaseInsensitive:$CaseInsensitive -RemoveNonExistent
+) | Select-UniquePath -OutPathName Env:PATH -OutPathNameAsArray $PathFile -CaseInsensitive:$CaseInsensitive -RemoveNonExistent -Attributes Directory
