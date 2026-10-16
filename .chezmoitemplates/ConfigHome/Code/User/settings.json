@@ -87,17 +87,14 @@
   // I love font ligatures
   // https://github.com/githubnext/monaspace?tab=readme-ov-file#coding-ligatures
   // https://github.com/githubnext/monaspace?tab=readme-ov-file#character-variants
-  "editor.fontLigatures": "'calt', 'liga', 'ss01', 'ss02', 'ss03', 'ss04', 'ss05', 'ss06', 'ss07', 'ss08', 'ss09'",
-  "editor.fontFamily": "'Monaspace Neon', 'Cascadia Code', 'Symbols Nerd Font', Consolas, monospace",
-  //"editor.fontVariations": "'slnt' 0, 'wght' 850, 'wdth' 400",
+  "editor.fontFamily": "'Monaspace Neon Var', 'Cascadia Code', 'Symbols Nerd Font', Consolas, monospace",
+  "editor.codeLensFontFamily": "'Monaspace Krypton Var','Cascadia Code'",
+  "editor.fontLigatures": "'calt', 'liga', 'ss01', 'ss02', 'ss03', 'ss04', 'ss05', 'ss06', 'ss07', 'ss08', 'ss09', 'cv01' 2, 'cv02' 1, 'cv10' 1, 'cv11' 1, 'cv30' 1",
+  "editor.fontVariations": "'slnt' 0, 'wght' 850, 'wdth' 400",
+  "editor.inlineSuggest.fontFamily": "'Monaspace Radon Var','Cascadia Code'",
+  "editor.inlayHints.fontFamily": "'Monaspace Krypton Var','Cascadia Code'",
   "terminal.integrated.fontFamily": "'Cascadia Code', 'Symbols Nerd Font', monospace",
-  "editor.codeLensFontFamily": "'Monaspace Krypton','Cascadia Code'",
-  //"editor.inlayHints.fontFamily": "'Monaspace Krypton','Cascadia Code'",
-  "editor.inlineSuggest.fontFamily": "'Monaspace Radon','Cascadia Code'",
-  "editor.experimentalInlineEdit.fontFamily": "'Monaspace Krypton','Cascadia Code'",
-  // "editor.inlineSuggest.suppressSuggestions": true,
-  // "errorLens.codeLensEnabled": false,
-  // "errorLens.gutterIconsEnabled": true,
+
   "errorLens.fontFamily": "'Monaspace Krypton','Cascadia Code'",
   "errorLens.fontSize": ".9em",
   "errorLens.fontWeight": "200",
